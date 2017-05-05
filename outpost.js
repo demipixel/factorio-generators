@@ -17,21 +17,6 @@ const DIRECTIONS = {
   left: 3
 };
 
-/*const INPUT_STRING = process.argv[4];
-const MINE_ORE_DIRECTION = DIRECTIONS[process.argv[2]];
-const ORE_EXIT_DIRECTION = DIRECTIONS[process.argv[3]];
-
-if (!INPUT_STRING || process.argv.length > 5) {
-  console.log('Format: node miner.js <mine ore direction> <ore exit direction> <blueprint string>');
-  process.exit(1);
-} else if (MINE_ORE_DIRECTION == undefined) {
-  console.log('Mine Ore direction (1st parameter) must be left, right, up, or down.');
-  process.exit(1);
-} else if (ORE_EXIT_DIRECTION == undefined) {
-  console.log('Ore Exit direction (2nd parameter) must be left, right, up, or down.');
-  process.exit(1);
-}*/
-
 function useOrDefault(value, def) {
   return isNaN(parseInt(value)) || value == undefined ? def : parseInt(value);
 }
@@ -49,8 +34,11 @@ module.exports = function(string, opt) {
   const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4);
   const SINGLE_HEADED_TRAIN = !!opt.exitRoute || false;
   const WALL_SPACE = useOrDefault(opt.wallSpace, 5);
+  const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
   const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
-  const BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
+  let BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
+
+  if (BELT_NAME.length > 0 && BELT_NAME[BELT_NAME.length - 1] != ')_') BELT_NAME += '_';
 
   const PROVIDED_BALANCER = opt.balancer;
 
@@ -152,7 +140,7 @@ module.exports = function(string, opt) {
     }
     const distanceOut = X_LENGTH - x - 1;
     
-    const connectWithSplitter = Math.floor(x*FINAL_LANES/X_LENGTH) == Math.floor(x + FINAL_LANES/X_LENGTH);
+    const connectWithSplitter = Math.floor(x*FINAL_LANES/X_LENGTH) == Math.floor((x+1)*FINAL_LANES/X_LENGTH);
     const finalLane = FINAL_LANES >= X_LENGTH ? X_LENGTH - x - 1 : FINAL_LANES - Math.floor(x*FINAL_LANES/X_LENGTH) - 1;
 
     for (let i = 0; i < distanceOut; i++) { // Go out, before going across
@@ -179,13 +167,12 @@ module.exports = function(string, opt) {
       bp.removeEntityAtPosition({ x: xPosition, y: yPosition + 1 });
       bp.createEntity(BELT_NAME+'splitter', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
     } else { // Generate "lowering" to meet other belts
-      for (let i = 0; i < distanceOut - finalLane - 1; i++) {
+      for (let i = 0; i < distanceOut - finalLane; i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance;
         const yPosition = Y_LENGTH*Y_SIZE + distanceOut - i;
         bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
       }
       
-      // Extend belts by one so the first belt doesn't turn left into miners' electricity poles
       for (let i = 0; i < cutInEarly + Math.max(1, FINAL_LANES - X_SIZE) + (FINAL_LANES <= 2 ? 1 : 0); i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance + i;
         const yPosition = Y_LENGTH*Y_SIZE + finalLane;
@@ -244,7 +231,7 @@ module.exports = function(string, opt) {
       }
       bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
       bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
-      bp.createEntity('stack_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
+      bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
     }
     OFFSET_Y -= 6;
     OFFSET_X += 4;

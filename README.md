@@ -20,4 +20,5 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - wallSpace: Space between wall and rest of the outpost (default 5)
 - undergroundBelts: Use underground belts in front of miners instead of regular belts
 - beltName: Name of type of belt in the format `type` or `type_transport_belt` (default `` which is yellow belt)
-- balancer: Blueprint string for an NxN balancer if the script does not have any available (N being the # of cargo wagons)
+- useStackInserters: Boolean, use stack inserters between the buffer chests and cargo wagon instead of fast inserters (default true)
+- balancer: Blueprint string for an NxN balancer if the script does not have any available (N being the # of cargo wagons) (no default)
