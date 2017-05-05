@@ -3,6 +3,7 @@ const Blueprint = require('factorio-blueprint');
 
 
 const BALANCER = {
+  1: '0eNqFjs0KgzAQhN9lzhGs2h/yKqUUbZeyoJuQrEWRvHsTe+mtl4VZZj6+DcM4kw8sCruBH04i7HVD5Jf0Y/np6gkWrDTBQPqpJFp8oBgrDb1E74JWA42KZMDypAX2kG4GJMrK9CXuYb3LPA0UcuEfy8C7mOdOikVG1gZrvqmQdxv7I2/wphD38qnrmmPdtufmktIHq6tMlw==',
   2: '0eNp1jsEKg0AQQ/8l57VoUaHzK6UUbYcyoOOyOxZF9t/r2ksvPSYkL9nQDzP7IGqgDfKYNIKuG6K8tBuyZ6tnEMR4hIN2Y1a8+MAxFtEPYsYByUH0yQuoSjcHVhMT/rIOsd51Hvs9SdV/ioOf4l6cNC/vsKI8NQ4rqEwZe5ygn88Obw7xyLd1fa4v5blt2pQ+qhFIlw==',
   4: '0eNqdlt1uwyAMhd/F13TChKRtXmWapv6gCiklCMjUqsq7jzTqVq1ul/gKkYSPg4+Nc4Ft0xkfrEtQX8DuWhehfr9AtAe3aYZn6ewN1GCTOYIAtzkOM3PywcS4SGHjom9DWmxNk6AXYN3enKDGXkyGRN/YlEy4W676DwHGJZusGQVdJ+dP1x23+csa/5MiwLcxL2/dsH9GLpSAcx6KfpD2B6eei3oE4Vs5ojSFKh5QXT5TOIQ2j8+04U2buIWq7ZLvhog+bKAZG8gZ/HJGLOTLUFSzTcIXHi3ZlisKt5pj+c85kUKt5yvDmzIBexvMbnxXEXCUs+mShCsKjlyLyJii4nokJ2gtuHDSNNRc1ySJK/l1j79lad2TqsSKmQa02iX7EpkkdsVMKzmhHtZMNpkFSnKTiiwAhZxGQrckxbmgaFUF40qnRWlm8LOu3NGv/b++++cQ8GVCHL3WWum1VFVZ9f032HrobA==',
 };
@@ -41,6 +42,13 @@ module.exports = function(string, opt) {
   let BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
 
   if (BELT_NAME.length > 0 && BELT_NAME[BELT_NAME.length - 1] != '_') BELT_NAME += '_';
+
+  const newEntityData = {};
+  newEntityData[REQUEST_TYPE] = { type: 'item' };
+  newEntityData[BELT_NAME+'transport_belt'] = { type: 'item', width: 1, height: 1 };
+  newEntityData[BELT_NAME+'splitter'] = { type: 'item', width: 1, height: 1 };
+  newEntityData[BELT_NAME+'underground_belt'] = { type: 'item', width: 1, height: 1, directionType: true };
+  Blueprint.setEntityData(newEntityData);
 
   const PROVIDED_BALANCER = opt.balancer;
 
