@@ -1,0 +1,14 @@
+{
+  "name": "factorio-outposts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "outpost old.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "factorio-blueprint": "^2.0.4"
+  }
+}
