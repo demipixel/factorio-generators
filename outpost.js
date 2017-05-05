@@ -245,7 +245,7 @@ module.exports = function(string, opt) {
       if (!BOT_BASED) bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
       if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
       else bp.createEntity('logistic_chest_requester', { x: xPosition + 2, y: yPosition })
-             .setRequestFilter(1, REQUEST_TYPE, 100);
+             .setRequestFilter(1, REQUEST_TYPE, 10000);
       bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
     }
     OFFSET_Y -= 6;
