@@ -36,19 +36,21 @@ module.exports = function(string, opt) {
   const WALL_SPACE = useOrDefault(opt.wallSpace, 5);
   const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
   const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
+  const BOT_BASED = !!opt.botBased || false;
+  const REQUEST_TYPE = opt.requestItem || 'iron_ore';
   let BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
 
-  if (BELT_NAME.length > 0 && BELT_NAME[BELT_NAME.length - 1] != ')_') BELT_NAME += '_';
+  if (BELT_NAME.length > 0 && BELT_NAME[BELT_NAME.length - 1] != '_') BELT_NAME += '_';
 
   const PROVIDED_BALANCER = opt.balancer;
 
-  if (!PROVIDED_BALANCER && !BALANCER[FINAL_LANES]) {
+  if (!PROVIDED_BALANCER && !BALANCER[FINAL_LANES] && !BOT_BASED) {
     throw new Error('I don\'t have a '+FINAL_LANES+'x'+FINAL_LANES+' balancer available, so you must provide the blueprint string for one. Use express belt and have it face upwards.');
   }
 
 
 
-  if (Math.abs(MINE_ORE_DIRECTION - ORE_EXIT_DIRECTION) % 2 == 0) {
+  if (Math.abs(MINE_ORE_DIRECTION - ORE_EXIT_DIRECTION) % 2 == 0 && !BOT_BASED) {
     throw new Error('Ore Exit direction must be perpendicular to Mine Ore direction.');
   }
 
@@ -89,18 +91,22 @@ module.exports = function(string, opt) {
   const Y_SIZE = (MINER_SIZE + SPACE_BETWEEN_MINERS)*2;
   const X_SIZE = (MINER_SIZE + 1)*2;
 
-  const balancerBlueprint = new Blueprint(PROVIDED_BALANCER || BALANCER[FINAL_LANES]);
+  let balancerBlueprint = null;
 
-  balancerBlueprint.entities.forEach(ent => {
-    if (ent.name.includes('transport_belt')) ent.name = BELT_NAME+'transport_belt';
-    else if (ent.name.includes('underground_belt')) ent.name = BELT_NAME+'underground_belt';
-    else if (ent.name.includes('splitter')) ent.name = BELT_NAME+'splitter';
-  });
+  if (!BOT_BASED) {
+    balancerBlueprint = new Blueprint(PROVIDED_BALANCER || BALANCER[FINAL_LANES]);
 
-  const balancerOffsetX = 0;
-  const balancerOffsetY = 0;
+    balancerBlueprint.entities.forEach(ent => {
+      if (ent.name.includes('transport_belt')) ent.name = BELT_NAME+'transport_belt';
+      else if (ent.name.includes('underground_belt')) ent.name = BELT_NAME+'underground_belt';
+      else if (ent.name.includes('splitter')) ent.name = BELT_NAME+'splitter';
+    });
 
-  balancerBlueprint.fixCenter(balancerBlueprint.bottomLeft().subtract({ x: balancerOffsetX, y: balancerOffsetY }));
+    const balancerOffsetX = 0;
+    const balancerOffsetY = 0;
+
+    balancerBlueprint.fixCenter(balancerBlueprint.bottomLeft().subtract({ x: balancerOffsetX, y: balancerOffsetY }));
+  }
 
   const X_LENGTH = Math.ceil(size.x/X_SIZE);
   const Y_LENGTH = Math.ceil(size.y/Y_SIZE);
@@ -123,18 +129,25 @@ module.exports = function(string, opt) {
         bp.createEntity('medium_electric_pole', { x: OFFSET_X + MINER_SIZE*2 + 1, y: OFFSET_Y + MINER_SIZE });
       }
 
-      if (!UNDERGROUND_BELT) {
-        for (let i = 0; i < Y_SIZE; i++) {
-          bp.createEntity(BELT_NAME+'transport_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + i }, Blueprint.DOWN);
+      if (!BOT_BASED) {
+        if (!UNDERGROUND_BELT) {
+          for (let i = 0; i < Y_SIZE; i++) {
+            bp.createEntity(BELT_NAME+'transport_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + i }, Blueprint.DOWN);
+          }
+        } else {
+          for (let i = 0; i < 2; i++) {
+            const secondaryOffset = i*(SPACE_BETWEEN_MINERS + MINER_SIZE);
+            const lastOffset = y == Y_LENGTH - 1 && i == 1 ? -1 : 0;
+            bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + 1 + secondaryOffset }, Blueprint.DOWN)
+              .setDirectionType('input');
+            bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + SPACE_BETWEEN_MINERS + MINER_SIZE + secondaryOffset + lastOffset }, Blueprint.DOWN)
+              .setDirectionType('output');
+          }
         }
       } else {
         for (let i = 0; i < 2; i++) {
-          const secondaryOffset = i*(SPACE_BETWEEN_MINERS + MINER_SIZE);
-          const lastOffset = y == Y_LENGTH - 1 && i == 1 ? -1 : 0;
-          bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + 1 + secondaryOffset }, Blueprint.DOWN)
-            .setDirectionType('input');
-          bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + SPACE_BETWEEN_MINERS + MINER_SIZE + secondaryOffset + lastOffset }, Blueprint.DOWN)
-            .setDirectionType('output');
+          bp.createEntity('logistic_chest_passive_provider', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + 1 + i*(SPACE_BETWEEN_MINERS + MINER_SIZE) })
+            .setBar(1);
         }
       }
     }
@@ -146,7 +159,7 @@ module.exports = function(string, opt) {
     for (let i = 0; i < distanceOut; i++) { // Go out, before going across
       const xPosition = OFFSET_X + MINER_SIZE;
       const yPosition = Y_LENGTH*Y_SIZE + i;
-      bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.DOWN);
+      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.DOWN);
     }
     const cutInEarly = distanceOut == 0 ? 0 : X_SIZE - finalLane;
     const acrossDistance = (connectWithSplitter ? X_SIZE : distanceOut*X_SIZE - cutInEarly) + 2; // Go across (either to hit splitter or go to balancer)
@@ -155,7 +168,7 @@ module.exports = function(string, opt) {
       const xPosition = OFFSET_X + MINER_SIZE + i; // Just getting the sign from direction data's x/y
       const yPosition = Y_LENGTH*Y_SIZE + distanceOut;
       if (!bp.findEntity({ x: xPosition, y: yPosition })) {
-        bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
+        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
 
         if (distanceOut == 0) locationForBalancer = { x: xPosition, y: yPosition };
       }
@@ -165,18 +178,18 @@ module.exports = function(string, opt) {
       const yPosition = Y_LENGTH*Y_SIZE + distanceOut - 1
       bp.removeEntityAtPosition({ x: xPosition, y: yPosition }); // Remove belts at splitter
       bp.removeEntityAtPosition({ x: xPosition, y: yPosition + 1 });
-      bp.createEntity(BELT_NAME+'splitter', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
+      if (!BOT_BASED) bp.createEntity(BELT_NAME+'splitter', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
     } else { // Generate "lowering" to meet other belts
       for (let i = 0; i < distanceOut - finalLane; i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance;
         const yPosition = Y_LENGTH*Y_SIZE + distanceOut - i;
-        bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
+        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
       }
       
       for (let i = 0; i < cutInEarly + Math.max(1, FINAL_LANES - X_SIZE) + (FINAL_LANES <= 2 ? 1 : 0); i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance + i;
         const yPosition = Y_LENGTH*Y_SIZE + finalLane;
-        bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
+        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
 
         if (distanceOut == 0) locationForBalancer = { x: xPosition, y: yPosition };
       }
@@ -184,7 +197,7 @@ module.exports = function(string, opt) {
   }
 
   // Place balancer
-  bp.placeBlueprint(balancerBlueprint, locationForBalancer, Blueprint.RIGHT/2);
+  if (!BOT_BASED) bp.placeBlueprint(balancerBlueprint, locationForBalancer, Blueprint.RIGHT/2);
 
   let needShift = {
     x: 0,
@@ -196,13 +209,13 @@ module.exports = function(string, opt) {
   // Generate lanes to cargo wagons, track, and train stop
   for (let l = 0; l < FINAL_LANES; l++) {
     let OFFSET_Y = locationForBalancer.y + l;
-    let OFFSET_X = locationForBalancer.x + (balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1);
+    let OFFSET_X = locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2);
     const START_TO_CARGO = OFFSET_Y;
 
     for (let i = 0; i < l; i++) {
       const xPosition = OFFSET_X + i;
       const yPosition = OFFSET_Y;
-      bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
+      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
     }
     OFFSET_X += l;
 
@@ -210,27 +223,29 @@ module.exports = function(string, opt) {
     for (let i = 0; i < distanceToCargoWagon; i++) {
       const xPosition = OFFSET_X;
       const yPosition = OFFSET_Y - i;
-      bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
+      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
     }
     OFFSET_Y -= distanceToCargoWagon;
     for (let i = 0; i < FINAL_LANES-l - 1; i++) {
       const xPosition = OFFSET_X + i;
       const yPosition = OFFSET_Y;
-      bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
+      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
     }
     OFFSET_X += FINAL_LANES-l - 1;
     for (let i = 0; i < 6; i++) {
       const xPosition = OFFSET_X;
       const yPosition = OFFSET_Y - i;
-      bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
+      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
 
       if (i == 0 && l == FINAL_LANES-1) {
         bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition + 1 });
       } else if (i == 5) {
         bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition - 1 });
       }
-      bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
-      bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
+      if (!BOT_BASED) bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
+      if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
+      else bp.createEntity('logistic_chest_requester', { x: xPosition + 2, y: yPosition })
+             .setRequestFilter(1, REQUEST_TYPE, 100);
       bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
     }
     OFFSET_Y -= 6;
