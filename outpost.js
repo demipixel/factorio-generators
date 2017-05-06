@@ -29,11 +29,13 @@ module.exports = function(string, opt) {
   const ORE_EXIT_DIRECTION = useOrDefault(opt.trainDirection, 1);
 
   const SPACE_BETWEEN_MINERS = useOrDefault(opt.minerSpace, 1);
+  const TURRETS_ENABLED = opt.turrets != undefined ? opt.turrets : true;
   const TURRET_SPACING = useOrDefault(opt.turretSpacing, 8);
   const USE_LASER_TURRETS = opt.laserTurrets == undefined ? true : !!opt.laserTurrets;
   const LOCOMOTIVES = useOrDefault(opt.locomotiveCount, 2);
   const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4);
   const SINGLE_HEADED_TRAIN = !!opt.exitRoute || false;
+  const WALLS_ENABLED = opt.walls != undefined ? !!opt.walls : true;
   const WALL_SPACE = useOrDefault(opt.wallSpace, 5);
   const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
   const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
@@ -339,18 +341,22 @@ module.exports = function(string, opt) {
   }
 
   for (let x = LOWER_X - WALL_SPACE; x <= UPPER_X + WALL_SPACE; x++) {
-    bp.createEntity(bp.findEntity({ x: x, y: LOWER_Y - WALL_SPACE }) ? 'gate' : 'stone_wall', { x: x, y: LOWER_Y - WALL_SPACE }, Blueprint.RIGHT, true);
-    bp.createEntity(bp.findEntity({ x: x, y: UPPER_Y + WALL_SPACE }) ? 'gate' : 'stone_wall', { x: x, y: UPPER_Y + WALL_SPACE }, Blueprint.RIGHT, true);
-    if (x % TURRET_SPACING == 0) {
+    if (WALLS_ENABLED) {
+      bp.createEntity(bp.findEntity({ x: x, y: LOWER_Y - WALL_SPACE }) ? 'gate' : 'stone_wall', { x: x, y: LOWER_Y - WALL_SPACE }, Blueprint.RIGHT, true);
+      bp.createEntity(bp.findEntity({ x: x, y: UPPER_Y + WALL_SPACE }) ? 'gate' : 'stone_wall', { x: x, y: UPPER_Y + WALL_SPACE }, Blueprint.RIGHT, true);
+    }
+    if (x % TURRET_SPACING == 0 && TURRETS_ENABLED) {
       generateTurret(true, x, false);
       generateTurret(true, x, true);
     }
   }
 
   for (let y = LOWER_Y - WALL_SPACE + 1; y < UPPER_Y + WALL_SPACE; y++) {
-    bp.createEntity(bp.findEntity({ x: LOWER_X - WALL_SPACE, y: y }) ? 'gate' : 'stone_wall', { x: LOWER_X - WALL_SPACE, y: y }, Blueprint.DOWN, true);
-    bp.createEntity(bp.findEntity({ x: UPPER_X + WALL_SPACE, y: y }) ? 'gate' : 'stone_wall', { x: UPPER_X + WALL_SPACE, y: y }, Blueprint.DOWN, true);
-    if (y % TURRET_SPACING == 0) {
+    if (WALLS_ENABLED) {
+      bp.createEntity(bp.findEntity({ x: LOWER_X - WALL_SPACE, y: y }) ? 'gate' : 'stone_wall', { x: LOWER_X - WALL_SPACE, y: y }, Blueprint.DOWN, true);
+      bp.createEntity(bp.findEntity({ x: UPPER_X + WALL_SPACE, y: y }) ? 'gate' : 'stone_wall', { x: UPPER_X + WALL_SPACE, y: y }, Blueprint.DOWN, true);
+    }
+    if (y % TURRET_SPACING == 0 && TURRETS_ENABLED) {
       generateTurret(false, y, false);
       generateTurret(false, y, true);
     }
