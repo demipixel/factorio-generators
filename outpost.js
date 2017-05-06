@@ -37,6 +37,7 @@ module.exports = function(string, opt) {
   const SINGLE_HEADED_TRAIN = !!opt.exitRoute || false;
   const WALLS_ENABLED = opt.walls != undefined ? !!opt.walls : true;
   const WALL_SPACE = useOrDefault(opt.wallSpace, 5);
+  const WALL_THICKNESS = useOrDefault(opt.wallThickness, 1);
   const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
   const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
   const BOT_BASED = !!opt.botBased || false;
@@ -276,7 +277,7 @@ module.exports = function(string, opt) {
       
       trainStopLocation = { x: xPosition + 2, y: yPosition };
       bp.createEntity('train_stop', trainStopLocation, Blueprint.UP);
-      for (let i = 0; i <= (START_TO_CARGO - yPosition) + FINAL_LANES + WALL_SPACE + 2; i += 2) {
+      for (let i = 0; i <= (START_TO_CARGO - yPosition) + FINAL_LANES + WALL_SPACE + 2 + WALL_THICKNESS; i += 2) {
         bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
         if (TRACK_CONCRETE) {
           const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
@@ -340,32 +341,46 @@ module.exports = function(string, opt) {
     } catch (e) {}
   }
 
-  for (let x = LOWER_X - WALL_SPACE; x <= UPPER_X + WALL_SPACE; x++) {
-    if (WALLS_ENABLED) {
-      bp.createEntity(bp.findEntity({ x: x, y: LOWER_Y - WALL_SPACE }) ? 'gate' : 'stone_wall', { x: x, y: LOWER_Y - WALL_SPACE }, Blueprint.RIGHT, true);
-      bp.createEntity(bp.findEntity({ x: x, y: UPPER_Y + WALL_SPACE }) ? 'gate' : 'stone_wall', { x: x, y: UPPER_Y + WALL_SPACE }, Blueprint.RIGHT, true);
-    }
-    if (x % TURRET_SPACING == 0 && TURRETS_ENABLED) {
-      generateTurret(true, x, false);
-      generateTurret(true, x, true);
-    }
-  }
-
-  for (let y = LOWER_Y - WALL_SPACE + 1; y < UPPER_Y + WALL_SPACE; y++) {
-    if (WALLS_ENABLED) {
-      bp.createEntity(bp.findEntity({ x: LOWER_X - WALL_SPACE, y: y }) ? 'gate' : 'stone_wall', { x: LOWER_X - WALL_SPACE, y: y }, Blueprint.DOWN, true);
-      bp.createEntity(bp.findEntity({ x: UPPER_X + WALL_SPACE, y: y }) ? 'gate' : 'stone_wall', { x: UPPER_X + WALL_SPACE, y: y }, Blueprint.DOWN, true);
-    }
-    if (y % TURRET_SPACING == 0 && TURRETS_ENABLED) {
-      generateTurret(false, y, false);
-      generateTurret(false, y, true);
-    }
-  }
-
-  for (let y = LOWER_Y - WALL_SPACE; y <= UPPER_Y + WALL_SPACE; y++) {
+  if (TURRETS_ENABLED) {
     for (let x = LOWER_X - WALL_SPACE; x <= UPPER_X + WALL_SPACE; x++) {
-      if (BORDER_CONRETE && (y - LOWER_Y + WALL_SPACE <= 1 || UPPER_Y + WALL_SPACE - y <= 1 || x - LOWER_X + WALL_SPACE <= 1 || UPPER_X + WALL_SPACE - x <= 1)) bp.createTile(BORDER_CONRETE, { x: x, y: y});
-      else if (CONCRETE && !bp.findTile({ x: x, y: y })) bp.createTile(CONCRETE, { x: x, y: y });
+      if (x % TURRET_SPACING == 0) {
+        generateTurret(true, x, false);
+        generateTurret(true, x, true);
+      }
+    }
+
+    for (let y = LOWER_Y - WALL_SPACE + 1; y < UPPER_Y + WALL_SPACE; y++) {
+      if (y % TURRET_SPACING == 0) {
+        generateTurret(false, y, false);
+        generateTurret(false, y, true);
+      }
+    }
+  }
+
+  if (WALLS_ENABLED) {
+    for (let i = 0; i < WALL_THICKNESS; i++) {
+      for (let x = LOWER_X - WALL_SPACE - i; x <= UPPER_X + WALL_SPACE + i; x++) {
+        const ent1 = bp.findEntity({ x: x, y: LOWER_Y - WALL_SPACE - i });
+        const ent2 = bp.findEntity({ x: x, y: UPPER_Y + WALL_SPACE + i });
+        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: x, y: LOWER_Y - WALL_SPACE - i }, Blueprint.RIGHT, true);
+        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: x, y: UPPER_Y + WALL_SPACE + i }, Blueprint.RIGHT, true);
+      }
+      for (let y = LOWER_Y - WALL_SPACE - i; y <= UPPER_Y + WALL_SPACE + i; y++) {
+        const ent1 = bp.findEntity({ x: LOWER_X - WALL_SPACE - i, y: y });
+        const ent2 = bp.findEntity({ x: UPPER_X + WALL_SPACE + i, y: y });
+        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: LOWER_X - WALL_SPACE - i, y: y }, Blueprint.DOWN, true);
+        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: UPPER_X + WALL_SPACE + i, y: y }, Blueprint.DOWN, true);
+      }
+    }
+  }
+
+  for (let y = LOWER_Y - WALL_SPACE - WALL_THICKNESS + 1; y <= UPPER_Y + WALL_SPACE + WALL_THICKNESS - 1; y++) {
+    for (let x = LOWER_X - WALL_SPACE - WALL_THICKNESS + 1; x <= UPPER_X + WALL_SPACE + WALL_THICKNESS - 1; x++) {
+      if (BORDER_CONRETE && (y - LOWER_Y + WALL_SPACE + WALL_THICKNESS <= WALL_THICKNESS + 1 || UPPER_Y + WALL_SPACE + WALL_THICKNESS - y <= WALL_THICKNESS + 1 || x - LOWER_X + WALL_SPACE + WALL_THICKNESS <= WALL_THICKNESS + 1 || UPPER_X + WALL_SPACE + WALL_THICKNESS - x <= WALL_THICKNESS + 1)) {
+        bp.createTile(BORDER_CONRETE, { x: x, y: y});
+      } else if (CONCRETE && !bp.findTile({ x: x, y: y })) {
+        bp.createTile(CONCRETE, { x: x, y: y });
+      }
     }
   }
 

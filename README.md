@@ -20,6 +20,7 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - exitRoute: true/false, whether or not there is a route past the train station for single-headed trains (default false)
 - walls: Whether or not to include walls (default true)
 - wallSpace: Space between wall and rest of the outpost (default 5)
+- wallThickness: Number of walls thick the outpost defenses are (default 1)
 - undergroundBelts: Use underground belts in front of miners instead of regular belts
 - beltName: Name of type of belt in the format `type` or `type_transport_belt` (default `` which is yellow belt)
 - useStackInserters: Boolean, use stack inserters between the buffer chests and cargo wagon instead of fast inserters (default true)
