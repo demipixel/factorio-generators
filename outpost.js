@@ -268,7 +268,7 @@ module.exports = function(string, opt) {
     OFFSET_X += 4;
 
     if (l == 0) {
-      const yPosition = OFFSET_Y - LOCOMOTIVES*7 + 1;
+      const yPosition = OFFSET_Y - LOCOMOTIVES*7;
       const xPosition = OFFSET_X;
 
       needShift.x = (xPosition + 0.5) % 2; // +1 because the rail grid is based of 0,0 being the center
