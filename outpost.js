@@ -39,6 +39,9 @@ module.exports = function(string, opt) {
   const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
   const BOT_BASED = !!opt.botBased || false;
   const REQUEST_TYPE = opt.requestItem || 'iron_ore';
+  const CONCRETE = opt.concrete || '';
+  const BORDER_CONRETE = opt.borderConcrete || '';
+  const TRACK_CONCRETE = opt.trackConcrete || '';
   let BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
 
   if (BELT_NAME.length > 0 && BELT_NAME[BELT_NAME.length - 1] != '_') BELT_NAME += '_';
@@ -48,6 +51,9 @@ module.exports = function(string, opt) {
   newEntityData[BELT_NAME+'transport_belt'] = { type: 'item', width: 1, height: 1 };
   newEntityData[BELT_NAME+'splitter'] = { type: 'item', width: 1, height: 1 };
   newEntityData[BELT_NAME+'underground_belt'] = { type: 'item', width: 1, height: 1, directionType: true };
+  if (CONCRETE) newEntityData[CONCRETE] = { type: 'tile' }
+  if (BORDER_CONRETE && !newEntityData[BORDER_CONRETE]) newEntityData[BORDER_CONRETE] = { type: 'tile' }
+  if (TRACK_CONCRETE && !newEntityData[TRACK_CONCRETE]) newEntityData[TRACK_CONCRETE] = { type: 'tile' }
   Blueprint.setEntityData(newEntityData);
 
   const PROVIDED_BALANCER = opt.balancer;
@@ -270,10 +276,28 @@ module.exports = function(string, opt) {
       bp.createEntity('train_stop', trainStopLocation, Blueprint.UP);
       for (let i = 0; i <= (START_TO_CARGO - yPosition) + FINAL_LANES + WALL_SPACE + 2; i += 2) {
         bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
+        if (TRACK_CONCRETE) {
+          const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
+          for (let xOffset = -1; xOffset <= 2; xOffset++) {
+            for (let yOffset = -1; yOffset <= 2; yOffset++) {
+              if (yPosition + i + yOffset > UPPER_Y + WALL_SPACE) continue;
+              bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition + i + yOffset });
+            }
+          }
+        }
       }
       if (SINGLE_HEADED_TRAIN) {
         for (let i = 2; i < Math.max(0, yPosition) + WALL_SPACE + 2; i += 2) {
           bp.createEntity('straight_rail', { x: xPosition, y: yPosition - i }, Blueprint.DOWN);
+          if (TRACK_CONCRETE) {
+            const LOWER_Y = Math.min(0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0));
+            for (let xOffset = -1; xOffset <= 1; xOffset++) {
+              for (let yOffset = -1; yOffset <= 1; yOffset++) {
+                if (yPosition - i + yOffset < LOWER_Y - WALL_SPACE) continue;
+                bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition - i + yOffset });
+              }
+            }
+          }
         }
       }
     }
@@ -329,6 +353,13 @@ module.exports = function(string, opt) {
     if (y % TURRET_SPACING == 0) {
       generateTurret(false, y, false);
       generateTurret(false, y, true);
+    }
+  }
+
+  for (let y = LOWER_Y - WALL_SPACE; y <= UPPER_Y + WALL_SPACE; y++) {
+    for (let x = LOWER_X - WALL_SPACE; x <= UPPER_X + WALL_SPACE; x++) {
+      if (BORDER_CONRETE && (y - LOWER_Y + WALL_SPACE <= 1 || UPPER_Y + WALL_SPACE - y <= 1 || x - LOWER_X + WALL_SPACE <= 1 || UPPER_X + WALL_SPACE - x <= 1)) bp.createTile(BORDER_CONRETE, { x: x, y: y});
+      else if (CONCRETE && !bp.findTile({ x: x, y: y })) bp.createTile(CONCRETE, { x: x, y: y });
     }
   }
 
