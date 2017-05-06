@@ -42,6 +42,7 @@ module.exports = function(string, opt) {
   const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
   const BOT_BASED = !!opt.botBased || false;
   const REQUEST_TYPE = opt.requestItem || 'iron_ore';
+  const REQUEST_AMOUNT = useOrDefault(opt.requestAmount, 4800);
   const CONCRETE = opt.concrete || '';
   const BORDER_CONRETE = opt.borderConcrete || '';
   const TRACK_CONCRETE = opt.trackConcrete || '';
@@ -262,7 +263,7 @@ module.exports = function(string, opt) {
       if (!BOT_BASED) bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
       if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
       else bp.createEntity('logistic_chest_requester', { x: xPosition + 2, y: yPosition })
-             .setRequestFilter(1, REQUEST_TYPE, 10000);
+             .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
       bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
     }
     OFFSET_Y -= 6;
@@ -317,11 +318,11 @@ module.exports = function(string, opt) {
   function generateTurret(isX, variable, upper) {
     const sign = upper ? 1 : -1;
     const yPosition = isX ?
-                        ((upper ? UPPER_Y : LOWER_Y) + WALL_SPACE*sign - 3*sign) :
+                        ((upper ? UPPER_Y + 1 : LOWER_Y) + WALL_SPACE*sign - 3*sign) :
                         variable;
     const xPosition = isX ?
                         (variable) :
-                        (upper ? UPPER_X : LOWER_X) + WALL_SPACE*sign - 3*sign;
+                        (upper ? UPPER_X + 1 : LOWER_X) + WALL_SPACE*sign - 3*sign;
 
     let dir = isX ? (upper ? Blueprint.DOWN : Blueprint.UP) : (upper ? Blueprint.RIGHT : Blueprint.LEFT);
 
