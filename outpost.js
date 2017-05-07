@@ -6,6 +6,7 @@ const BALANCER = {
   1: '0eNqFjs0KgzAQhN9lzhGs2h/yKqUUbZeyoJuQrEWRvHsTe+mtl4VZZj6+DcM4kw8sCruBH04i7HVD5Jf0Y/np6gkWrDTBQPqpJFp8oBgrDb1E74JWA42KZMDypAX2kG4GJMrK9CXuYb3LPA0UcuEfy8C7mOdOikVG1gZrvqmQdxv7I2/wphD38qnrmmPdtufmktIHq6tMlw==',
   2: '0eNp1jsEKg0AQQ/8l57VoUaHzK6UUbYcyoOOyOxZF9t/r2ksvPSYkL9nQDzP7IGqgDfKYNIKuG6K8tBuyZ6tnEMR4hIN2Y1a8+MAxFtEPYsYByUH0yQuoSjcHVhMT/rIOsd51Hvs9SdV/ioOf4l6cNC/vsKI8NQ4rqEwZe5ygn88Obw7xyLd1fa4v5blt2pQ+qhFIlw==',
   4: '0eNqdlt1uwyAMhd/F13TChKRtXmWapv6gCiklCMjUqsq7jzTqVq1ul/gKkYSPg4+Nc4Ft0xkfrEtQX8DuWhehfr9AtAe3aYZn6ewN1GCTOYIAtzkOM3PywcS4SGHjom9DWmxNk6AXYN3enKDGXkyGRN/YlEy4W676DwHGJZusGQVdJ+dP1x23+csa/5MiwLcxL2/dsH9GLpSAcx6KfpD2B6eei3oE4Vs5ojSFKh5QXT5TOIQ2j8+04U2buIWq7ZLvhog+bKAZG8gZ/HJGLOTLUFSzTcIXHi3ZlisKt5pj+c85kUKt5yvDmzIBexvMbnxXEXCUs+mShCsKjlyLyJii4nokJ2gtuHDSNNRc1ySJK/l1j79lad2TqsSKmQa02iX7EpkkdsVMKzmhHtZMNpkFSnKTiiwAhZxGQrckxbmgaFUF40qnRWlm8LOu3NGv/b++++cQ8GVCHL3WWum1VFVZ9f032HrobA==',
+  8: '0eNqlmttu4lAMRf8lz+no2OfOr4yqUS9RFakNKIRRq4p/Hxg6o6oksL37hGhhx/GxnWXj9+b+eddtxn6YmtV70z+sh22z+vnebPun4e75+LfpbdM1q6afupembYa7l+O77nUzdtvtzTTeDdvNepxu7rvnqdm3TT88dq/NSvYtLLLdPPfT1I2fvq7727bphqmf+u5k0N83b7+G3cv94ZMrWVZpm816e/jiejhe+SB2U9rm7fDif8TDFR77sXs4/TcdjfwirNfu8Vy+fshfF/e0eLguHs7Edwdnjk/j+vC6JJ/mbW//ndh6N212x4M9u1y030uG7yXZxRMsni2x82GzIrFT7FZH2OpKi/v9jJw4u16YNTbMqQsTjGE2GMP/YOyHhVgUIms97Hkh0lZxdSpv5UreLruKyFvBbyYZcssZyrJkwktCFzexp7LOB++cuD2V8RNQx1qOiItZ3MMPR1VWHLHcnsMBF2dS+FOxuxqOak/aCIejJlYceBBoNovjD3IthN8TWznVnrY48HhnKJwWnvUWUrbAjrenK86y3rPiCIUHonkQyCeRBnwB1BOtroB6poEesb3QRI+o12/0PmrHg+BoGAfuJgitrnOoH9QS78EQ78EzfvfznkD8HmgSl1nPRFoPyKiQ6K4EUc80yMv153Yo3+hK1PxsDdXeN0ARGh3fNxCFIQqL9kBdiErci15JtsUjiZ6/mpo7+BhY+J8teTEa4slS8aKlwf2w0EHCmaVwJHIKS+GIeGUtB6pccjzi28tQEhbxAT8ltSM+FJOJhmXkAAIrjrgk2kkcyqZEozJidWbFHSBOgzIiXlnGB8Sz4yGcYMEs9jE+lE5ZWfxGnORZcQDacrCDPpROOfKc74ijTczl9HIkLRb9nPmrOWR6lwvbBwDFKFe2DQDEi2PF3fVoLUIDJlEuipJk7ub4snhSbbYNLYH2hDOHe4kkaQMFqCQzdkP1p7BTZKAil0LiK6LNojGQm5UnY3uNrCwYA06qap5QQ8/x6s28DQVjZYkY8UUktZGASXbYhn4JqDQPA8P6WlhxoLmp35gbE9MhcY6Fe8BT4oSle0hd2YWRL+o6q+75hZHFadOlkwgshyvwA7+LrDp0EomdWi9sAn0DgHUPrJw4GoAXDK6s3uywUMSZp89QYRQRlp+ROBDlZ/T22ZiIp0fpTK0UHoqZgkDsRSl+UolsFyDxTK62zCcXsfrk4TJPrD55uOqqo9dwoDJGbD/FC1WH2HeKF86N2HDC0YLacEpspSHWnXCO0WRuC7BiT6w6waAqWkjxM5fctqc1/NWn1f+2+d2N29MHQtDoatUU9vs/+vw94Q=='
 };
 
 
@@ -46,6 +47,7 @@ module.exports = function(string, opt) {
   const WALL_THICKNESS = useOrDefault(opt.wallThickness, 1);
 
   // Trains
+  const INCLUDE_TRAIN_STATION = opt.includeTrainStation != undefined ? opt.includeTrainStation : true;
   const LOCOMOTIVES = useOrDefault(opt.locomotiveCount, 2);
   const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4);
   const SINGLE_HEADED_TRAIN = opt.exitRoute || false;
@@ -70,6 +72,9 @@ module.exports = function(string, opt) {
   newEntityData[BELT_NAME+'transport_belt'] = { type: 'item', width: 1, height: 1 };
   newEntityData[BELT_NAME+'splitter'] = { type: 'item', width: 1, height: 1 };
   newEntityData[BELT_NAME+'underground_belt'] = { type: 'item', width: 1, height: 1, directionType: true };
+
+  newEntityData[MINING_DRILL_NAME] = { type: 'item', width: 3, height: 3 };
+
   if (CONCRETE) newEntityData[CONCRETE] = { type: 'tile' }
   if (BORDER_CONRETE && !newEntityData[BORDER_CONRETE]) newEntityData[BORDER_CONRETE] = { type: 'tile' }
   if (TRACK_CONCRETE && !newEntityData[TRACK_CONCRETE]) newEntityData[TRACK_CONCRETE] = { type: 'tile' }
@@ -242,86 +247,90 @@ module.exports = function(string, opt) {
   let trainStopLocation = null;
 
   // Generate lanes to cargo wagons, track, and train stop
-  for (let l = 0; l < FINAL_LANES; l++) {
-    let OFFSET_Y = locationForBalancer.y + l;
-    let OFFSET_X = locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2);
-    const START_TO_CARGO = OFFSET_Y;
+  if (INCLUDE_TRAIN_STATION) {
+    for (let l = 0; l < FINAL_LANES; l++) {
+      let OFFSET_Y = locationForBalancer.y + l;
+      let OFFSET_X = locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2);
+      const START_TO_CARGO = OFFSET_Y;
 
-    for (let i = 0; i < l; i++) {
-      const xPosition = OFFSET_X + i;
-      const yPosition = OFFSET_Y;
-      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
-    }
-    OFFSET_X += l;
-
-    const distanceToCargoWagon = (FINAL_LANES - l - 1)*6;
-    for (let i = 0; i < distanceToCargoWagon; i++) {
-      const xPosition = OFFSET_X;
-      const yPosition = OFFSET_Y - i;
-      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
-    }
-    OFFSET_Y -= distanceToCargoWagon;
-    for (let i = 0; i < FINAL_LANES-l - 1; i++) {
-      const xPosition = OFFSET_X + i;
-      const yPosition = OFFSET_Y;
-      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
-    }
-    OFFSET_X += FINAL_LANES-l - 1;
-    for (let i = 0; i < 6; i++) {
-      const xPosition = OFFSET_X;
-      const yPosition = OFFSET_Y - i;
-      if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
-
-      if (i == 0 && l == FINAL_LANES-1) {
-        bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition + 1 });
-      } else if (i == 5) {
-        bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition - 1 });
+      for (let i = 0; i < l; i++) {
+        const xPosition = OFFSET_X + i;
+        const yPosition = OFFSET_Y;
+        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
       }
-      if (!BOT_BASED) bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
-      if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
-      else bp.createEntity('logistic_chest_requester', { x: xPosition + 2, y: yPosition })
-             .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
-      bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
-    }
-    OFFSET_Y -= 6;
-    OFFSET_X += 4;
+      OFFSET_X += l;
 
-    if (l == 0) {
-      const yPosition = OFFSET_Y - LOCOMOTIVES*7;
-      const xPosition = OFFSET_X;
+      const distanceToCargoWagon = (FINAL_LANES - l - 1)*6;
+      for (let i = 0; i < distanceToCargoWagon; i++) {
+        const xPosition = OFFSET_X;
+        const yPosition = OFFSET_Y - i;
+        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
+      }
+      OFFSET_Y -= distanceToCargoWagon;
+      for (let i = 0; i < FINAL_LANES-l - 1; i++) {
+        const xPosition = OFFSET_X + i;
+        const yPosition = OFFSET_Y;
+        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
+      }
+      OFFSET_X += FINAL_LANES-l - 1;
+      for (let i = 0; i < 6; i++) {
+        const xPosition = OFFSET_X;
+        const yPosition = OFFSET_Y - i;
+        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
 
-      needShift.x = (xPosition + 0.5) % 2; // +1 because the rail grid is based of 0,0 being the center
-      needShift.y = (yPosition + 0.5) % 2;
-      
-      trainStopLocation = { x: xPosition + 2, y: yPosition };
-      bp.createEntity('train_stop', trainStopLocation, Blueprint.UP);
-      for (let i = 0; i <= (START_TO_CARGO - yPosition) + FINAL_LANES + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
-        bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
-        if (TRACK_CONCRETE) {
-          const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
-          for (let xOffset = -1; xOffset <= 2; xOffset++) {
-            for (let yOffset = -1; yOffset <= 2; yOffset++) {
-              if (yPosition + i + yOffset > UPPER_Y + WALL_SPACE) continue;
-              bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition + i + yOffset });
+        if (i == 0 && l == FINAL_LANES-1) {
+          bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition + 1 });
+        } else if (i == 5) {
+          bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition - 1 });
+        }
+        if (!BOT_BASED) bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
+        if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
+        else bp.createEntity('logistic_chest_requester', { x: xPosition + 2, y: yPosition })
+               .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
+        bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
+      }
+      OFFSET_Y -= 6;
+      OFFSET_X += 4;
+
+      if (l == 0) {
+        const yPosition = OFFSET_Y - LOCOMOTIVES*7;
+        const xPosition = OFFSET_X;
+
+        needShift.x = (xPosition + 0.5) % 2; // +1 because the rail grid is based of 0,0 being the center
+        needShift.y = (yPosition + 0.5) % 2;
+        
+        trainStopLocation = { x: xPosition + 2, y: yPosition };
+        bp.createEntity('train_stop', trainStopLocation, Blueprint.UP);
+        for (let i = 0; i <= (START_TO_CARGO - yPosition) + FINAL_LANES + WALL_SPACE + WALL_THICKNESS + 1; i += 2) {
+          bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
+          if (TRACK_CONCRETE) {
+            const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
+            for (let xOffset = -1; xOffset <= 2; xOffset++) {
+              for (let yOffset = -1; yOffset <= 2; yOffset++) {
+                if (yPosition + i + yOffset > UPPER_Y + WALL_SPACE) continue;
+                bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition + i + yOffset });
+              }
             }
           }
         }
-      }
-      if (SINGLE_HEADED_TRAIN) {
-        const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
-        for (let i = 2; i < (yPosition - LOWER_Y) + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
-          bp.createEntity('straight_rail', { x: xPosition, y: yPosition - i }, Blueprint.DOWN);
-          if (TRACK_CONCRETE) {
-            for (let xOffset = -1; xOffset <= 1; xOffset++) {
-              for (let yOffset = -1; yOffset <= 1; yOffset++) {
-                if (yPosition - i + yOffset < LOWER_Y - WALL_SPACE) continue;
-                bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition - i + yOffset });
+        if (SINGLE_HEADED_TRAIN) {
+          const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
+          for (let i = 2; i < (yPosition - LOWER_Y) + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
+            bp.createEntity('straight_rail', { x: xPosition, y: yPosition - i }, Blueprint.DOWN);
+            if (TRACK_CONCRETE) {
+              for (let xOffset = -1; xOffset <= 1; xOffset++) {
+                for (let yOffset = -1; yOffset <= 1; yOffset++) {
+                  if (yPosition - i + yOffset < LOWER_Y - WALL_SPACE) continue;
+                  bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition - i + yOffset });
+                }
               }
             }
           }
         }
       }
     }
+  } else {
+    trainStopLocation = { x: locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2) + FINAL_LANES, y: locationForBalancer.y - 5 };
   }
 
   // Place walls and laser turrets
