@@ -308,10 +308,10 @@ module.exports = function(string, opt) {
         }
       }
       if (SINGLE_HEADED_TRAIN) {
-        for (let i = 2; i < Math.max(0, yPosition) + WALL_SPACE + 2; i += 2) {
+        const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
+        for (let i = 2; i < (yPosition - LOWER_Y) + WALL_SPACE + 4; i += 2) {
           bp.createEntity('straight_rail', { x: xPosition, y: yPosition - i }, Blueprint.DOWN);
           if (TRACK_CONCRETE) {
-            const LOWER_Y = Math.min(0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0));
             for (let xOffset = -1; xOffset <= 1; xOffset++) {
               for (let yOffset = -1; yOffset <= 1; yOffset++) {
                 if (yPosition - i + yOffset < LOWER_Y - WALL_SPACE) continue;
@@ -326,10 +326,10 @@ module.exports = function(string, opt) {
 
   // Place walls and laser turrets
 
-  const LOWER_X = 0;
+  const LOWER_X = -2;
   const UPPER_X = trainStopLocation.x + 2;
 
-  const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0));
+  const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
   const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
 
   function generateTurret(isX, variable, upper, placePowerpole) {
