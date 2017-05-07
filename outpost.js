@@ -295,7 +295,7 @@ module.exports = function(string, opt) {
       
       trainStopLocation = { x: xPosition + 2, y: yPosition };
       bp.createEntity('train_stop', trainStopLocation, Blueprint.UP);
-      for (let i = 0; i <= (START_TO_CARGO - yPosition) + FINAL_LANES + WALL_SPACE + 2 + WALL_THICKNESS; i += 2) {
+      for (let i = 0; i <= (START_TO_CARGO - yPosition) + FINAL_LANES + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
         bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
         if (TRACK_CONCRETE) {
           const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
