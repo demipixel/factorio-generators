@@ -335,11 +335,11 @@ module.exports = function(string, opt) {
   function generateTurret(isX, variable, upper, placePowerpole) {
     const sign = upper ? 1 : -1;
     const yPosition = isX ?
-                        ((upper ? UPPER_Y + 1 : LOWER_Y) + WALL_SPACE*sign - 3*sign) :
+                        ((upper ? UPPER_Y : LOWER_Y - 1) + WALL_SPACE*sign - 3*sign) :
                         variable;
     const xPosition = isX ?
                         (variable) :
-                        (upper ? UPPER_X + 1 : LOWER_X) + WALL_SPACE*sign - 3*sign;
+                        (upper ? UPPER_X : LOWER_X - 1) + WALL_SPACE*sign - 3*sign;
 
     let dir = isX ? (upper ? Blueprint.DOWN : Blueprint.UP) : (upper ? Blueprint.RIGHT : Blueprint.LEFT);
 
