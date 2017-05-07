@@ -12,6 +12,7 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - minedOreDirection: 0-3 direction ore should flow when mined (0 is up) (default 2)
 - trainDirection: 0-3, Side the train station should be on (Must be perpendicular to minedOreDirection) (default 1)
 - minerSpace: 0-2, space between miners (default 1)
+- includeRadar: Boolean, whether or not to include a radar (default true)
 - turretSpacing: 2-9, spacing between turrets on wall (default 8)
 - turrets: true/false, whether turrets are enabled or not (default true)
 - laserTurrets: true/false, use laser turrets instead of gun turrets (default true)

@@ -25,29 +25,44 @@ function useOrDefault(value, def) {
 module.exports = function(string, opt) {
 
   opt = opt || {};
+
+  // Directions
   const MINE_ORE_DIRECTION = useOrDefault(opt.minedOreDirection, 2);
   const ORE_EXIT_DIRECTION = useOrDefault(opt.trainDirection, 1);
 
+  // General
   const SPACE_BETWEEN_MINERS = useOrDefault(opt.minerSpace, 1);
+  const MINING_DRILL_NAME = opt.miningDrillName || 'electric_mining_drill';
+  const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
+  const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
+
+  // Defenses
   const TURRETS_ENABLED = opt.turrets != undefined ? opt.turrets : true;
   const TURRET_SPACING = useOrDefault(opt.turretSpacing, 8);
   const USE_LASER_TURRETS = opt.laserTurrets == undefined ? true : !!opt.laserTurrets;
-  const LOCOMOTIVES = useOrDefault(opt.locomotiveCount, 2);
-  const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4);
-  const SINGLE_HEADED_TRAIN = !!opt.exitRoute || false;
+
   const WALLS_ENABLED = opt.walls != undefined ? !!opt.walls : true;
   const WALL_SPACE = useOrDefault(opt.wallSpace, 5);
   const WALL_THICKNESS = useOrDefault(opt.wallThickness, 1);
-  const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
-  const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
-  const BOT_BASED = !!opt.botBased || false;
+
+  // Trains
+  const LOCOMOTIVES = useOrDefault(opt.locomotiveCount, 2);
+  const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4);
+  const SINGLE_HEADED_TRAIN = opt.exitRoute || false;
+
+  // Bot info
+  const BOT_BASED = opt.botBased || false;
   const REQUEST_TYPE = opt.requestItem || 'iron_ore';
   const REQUEST_AMOUNT = useOrDefault(opt.requestAmount, 4800);
+
+  // Tiles
   const CONCRETE = opt.concrete || '';
   const BORDER_CONRETE = opt.borderConcrete || '';
   const TRACK_CONCRETE = opt.trackConcrete || '';
-  let BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
 
+  // Belt shenanigans
+  const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
+  let BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
   if (BELT_NAME.length > 0 && BELT_NAME[BELT_NAME.length - 1] != '_') BELT_NAME += '_';
 
   const newEntityData = {};
@@ -131,16 +146,18 @@ module.exports = function(string, opt) {
 
   let locationForBalancer = null;
 
+  if (INCLUDE_RADAR) bp.createEntity('radar', { x: 0, y: -3 });
+
   // Place miners, belts, and merger splitters
   for (let x = 0; x < X_LENGTH; x++) {
     const OFFSET_X = x*X_SIZE;
     for (let y = 0; y < Y_LENGTH; y++) {
       const OFFSET_Y = y*Y_SIZE;
 
-      bp.createEntity('electric_mining_drill', { x: OFFSET_X,                  y: OFFSET_Y }, Blueprint.RIGHT);
-      bp.createEntity('electric_mining_drill', { x: OFFSET_X,                  y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.RIGHT);
-      bp.createEntity('electric_mining_drill', { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y }, Blueprint.LEFT);
-      bp.createEntity('electric_mining_drill', { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.LEFT);
+      bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y }, Blueprint.RIGHT);
+      bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.RIGHT);
+      bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y }, Blueprint.LEFT);
+      bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.LEFT);
       bp.createEntity('medium_electric_pole', { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE });
 
       if (x == X_LENGTH - 1) {
@@ -312,10 +329,10 @@ module.exports = function(string, opt) {
   const LOWER_X = 0;
   const UPPER_X = trainStopLocation.x + 2;
 
-  const LOWER_Y = Math.min(0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0));
+  const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0));
   const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
 
-  function generateTurret(isX, variable, upper) {
+  function generateTurret(isX, variable, upper, placePowerpole) {
     const sign = upper ? 1 : -1;
     const yPosition = isX ?
                         ((upper ? UPPER_Y + 1 : LOWER_Y) + WALL_SPACE*sign - 3*sign) :
@@ -328,32 +345,36 @@ module.exports = function(string, opt) {
 
     try {
       bp.createEntity(USE_LASER_TURRETS ? 'laser_turret' : 'gun_turret', { x: xPosition, y: yPosition }, dir);
-      if (USE_LASER_TURRETS) {
-        try {
-          const OFFSET_Y = isX ? 0 : -1;
-          const OFFSET_X = isX ? -1 : 0;
-          bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
-        } catch (e) {
-          const OFFSET_Y = isX ? 0 : 2;
-          const OFFSET_X = isX ? 2 : 0;
-          bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
-        }
-      }
     } catch (e) {}
+    // Try to generate power poles anyway so that they can connect
+    if (USE_LASER_TURRETS && placePowerpole) {
+      const movePowerpoleBehind = (TURRET_SPACING == 2 ? (upper ? -1 : 2) : 0);
+      try {
+        const OFFSET_Y = isX ? movePowerpoleBehind : -1;
+        const OFFSET_X = isX ? -1 : movePowerpoleBehind;
+        bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
+      } catch (e) {
+        const OFFSET_Y = isX ? movePowerpoleBehind : 2;
+        const OFFSET_X = isX ? 2 : movePowerpoleBehind;
+        bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
+      }
+    }
   }
 
   if (TURRETS_ENABLED) {
-    for (let x = LOWER_X - WALL_SPACE; x <= UPPER_X + WALL_SPACE; x++) {
+    for (let x = LOWER_X - WALL_SPACE + 3; x <= UPPER_X + WALL_SPACE - 3; x++) {
+      const placePowerpole = TURRET_SPACING <= 4 ? x % (TURRET_SPACING * 2) == 0 : true;
       if (x % TURRET_SPACING == 0) {
-        generateTurret(true, x, false);
-        generateTurret(true, x, true);
+        generateTurret(true, x, false, placePowerpole);
+        generateTurret(true, x, true, placePowerpole);
       }
     }
 
-    for (let y = LOWER_Y - WALL_SPACE + 1; y < UPPER_Y + WALL_SPACE; y++) {
+    for (let y = LOWER_Y - WALL_SPACE + 1 + 3; y < UPPER_Y + WALL_SPACE - 3; y++) {
+      const placePowerpole = TURRET_SPACING <= 4 ? y % (TURRET_SPACING * 2) == 0 : true;
       if (y % TURRET_SPACING == 0) {
-        generateTurret(false, y, false);
-        generateTurret(false, y, true);
+        generateTurret(false, y, false, placePowerpole);
+        generateTurret(false, y, true, placePowerpole);
       }
     }
   }
@@ -399,7 +420,7 @@ module.exports = function(string, opt) {
         e.direction = e.direction == 2 ? 6 : 2;
       }
     });
-    bp.fixCenter({ x: 1, y: 1 });
+    bp.fixCenter({ x: 1, y: 0 });
   }
 
   const final = new Blueprint();
