@@ -427,7 +427,7 @@ module.exports = function(string, opt) {
   bp.fixCenter();
   bp.fixCenter(needShift); // Move center some amount between 0 and 2 so rails snap correctly
 
-  if (ORE_EXIT_DIRECTION > MINE_ORE_DIRECTION || (ORE_EXIT_DIRECTION == 0 && MINE_ORE_DIRECTION == 3)) {
+  if (ORE_EXIT_DIRECTION == MINE_ORE_DIRECTION + 1 || (ORE_EXIT_DIRECTION == 0 && MINE_ORE_DIRECTION == 3)) {
     bp.entities.forEach(e => {
       if (e.name == 'train_stop') {
         e.position.x = -e.position.x + e.size.x;
