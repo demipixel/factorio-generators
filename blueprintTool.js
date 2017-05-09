@@ -16,6 +16,18 @@ module.exports = function(string, opt) {
 
   const changed = [];
 
+  const newEntityData = {};
+
+  [ENTITY_REPLACE, RECIPE_REPLACE, MODULE_REPLACE].forEach(replaceType => {
+    replaceType.forEach(replace => {
+      ['to', 'from', 'includes'].forEach(type => {
+        if (replace[type] && !Blueprint.getEntityData()[bp.jsName(replace[type].replace('includes:', ''))]) newEntityData[bp.jsName(replace[type].replace('includes:', ''))] = { type: 'item' };
+      });
+    });
+  });
+
+  Blueprint.setEntityData(newEntityData);
+
   old.entities.forEach(ent => {
 
     ENTITY_REPLACE.forEach(replace => {
@@ -47,7 +59,7 @@ module.exports = function(string, opt) {
   });
 
   old.entities.forEach(ent => {
-    if (ent.changed || !MODIFIED_ONLY) bp.createEntityWithData(ent.getData(), false, true, true);
+    if (ent.changed || !MODIFIED_ONLY) bp.createEntityWithData(ent.getData(), true, true, true); // Allow overlap in case modded items with unknown size
   });
 
   bp.entities.forEach(ent => {
