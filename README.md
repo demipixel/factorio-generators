@@ -12,6 +12,7 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - minedOreDirection: 0-3 direction ore should flow when mined (0 is up) (default 2)
 - trainDirection: 0-3, Side the train station should be on (Must be perpendicular to minedOreDirection) (default 1)
 - minerSpace: 0-2, space between miners (default 1)
+- module: Module name to fill up miners with, empty for none
 - includeRadar: Boolean, whether or not to include a radar (default true)
 - turretSpacing: 2-9, spacing between turrets on wall (default 8)
 - turrets: Boolean, whether turrets are enabled or not (default true)
@@ -33,3 +34,14 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - borderConcrete: Type of concrete put on the wall and just inside the walls (default none)
 - trackConrete: Type of concrete put on the track and just surrounding the track (default none)
 - balancer: Blueprint string for an NxN balancer if the script does not have any available (N being the # of cargo wagons) (no default)
+
+### blueprintTool(blueprintString, opt)
+
+Modifies a blueprint in different ways and returns a new blueprint string.
+
+- flipX: Boolean, flip along the X axis (default false)
+- flipY: Boolean, flip along the Y axis (default false)
+- The following are an array of objects with a key `to` for the entity name to convert to and `from` for an exact name or `includes` for any entity including the string
+- entityReplace: Array of objects to convert entity types in the form { from: 'name', to: 'name' } (default empty array)
+- recipeReplace: Array of objects to convert recipes in assembly machines in the form { from: 'name', to: 'name' } (default empty array)
+- modifiedOnly: Resulting blueprint only contains entities which have been modified by a replace.

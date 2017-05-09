@@ -34,6 +34,7 @@ module.exports = function(string, opt) {
   // General
   const SPACE_BETWEEN_MINERS = useOrDefault(opt.minerSpace, 1);
   const MINING_DRILL_NAME = opt.miningDrillName || 'electric_mining_drill';
+  const MODULE = opt.module;
   const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
 
@@ -159,11 +160,19 @@ module.exports = function(string, opt) {
     for (let y = 0; y < Y_LENGTH; y++) {
       const OFFSET_Y = y*Y_SIZE;
 
-      bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y }, Blueprint.RIGHT);
-      bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.RIGHT);
-      bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y }, Blueprint.LEFT);
-      bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.LEFT);
+      const miningDrillEntities = [];
+
+      miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y }, Blueprint.RIGHT));
+      miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.RIGHT));
+      miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y }, Blueprint.LEFT));
+      miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.LEFT));
       bp.createEntity('medium_electric_pole', { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE });
+
+      if (MODULE) {
+        miningDrillEntities.forEach(ent => {
+          ent.modules = [{ item: bp.fixName(MODULE), count: 3 }];
+        });
+      }
 
       if (x == X_LENGTH - 1) {
         bp.createEntity('medium_electric_pole', { x: OFFSET_X + MINER_SIZE*2 + 1, y: OFFSET_Y + MINER_SIZE });
