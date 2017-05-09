@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "factorio-blueprint": "^2.0.9"
+    "factorio-blueprint": "^2.0.11"
   }
 }
