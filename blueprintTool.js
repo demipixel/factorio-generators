@@ -41,7 +41,7 @@ module.exports = function(string, opt) {
   old.entities.forEach(ent => {
     RECIPE_REPLACE.forEach(replace => {
       if (ent.recipe == bp.jsName(replace.from) || ent.recipe.includes(bp.jsName(replace.includes))) {
-        ent.recipe = bp.jsName(replace.to0;
+        ent.recipe = bp.jsName(replace.to);
         ent.changed = true;
       }
     });
