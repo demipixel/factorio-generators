@@ -1,4 +1,5 @@
 
 module.exports = {
-  outpost: require('./outpost')
-}
+  outpost: require('./outpost'),
+  blueprintTool: require('./blueprintTool')
+};
