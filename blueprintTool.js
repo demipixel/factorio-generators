@@ -31,8 +31,8 @@ module.exports = function(string, opt) {
   old.entities.forEach(ent => {
 
     ENTITY_REPLACE.forEach(replace => {
-      if (ent.name == replace.from || ent.name.includes(replace.includes)) {
-        ent.name = replace.to;
+      if (ent.name == bp.jsName(replace.from) || ent.name.includes(bp.jsName(replace.includes))) {
+        ent.name = bp.jsName(replace.to);
         ent.changed = true;
       }
     });
@@ -40,8 +40,8 @@ module.exports = function(string, opt) {
 
   old.entities.forEach(ent => {
     RECIPE_REPLACE.forEach(replace => {
-      if (ent.recipe == replace.from || ent.recipe.includes(replace.includes)) {
-        ent.recipe = replace.to;
+      if (ent.recipe == bp.jsName(replace.from) || ent.recipe.includes(bp.jsName(replace.includes))) {
+        ent.recipe = bp.jsName(replace.to0;
         ent.changed = true;
       }
     });
@@ -51,8 +51,9 @@ module.exports = function(string, opt) {
     if (!ent.modules) return;
     MODULE_REPLACE.forEach(replaceModule => {
       ent.modules.forEach(mod => {
-        if (mod.item == replaceModule.from || mod.item.includes(replaceModule.includes)) {
-          mod.item = replaceModule.to;
+        if (mod.item == bp.jsName(replaceModule.from) || mod.item.includes(bp.jsName(replaceModule.includes))) {
+          mod.item = bp.jsName(replaceModule.to);
+          ent.changed = true;
         }
       });
     });
