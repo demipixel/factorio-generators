@@ -1,0 +1,220 @@
+#!/usr/bin/env node
+'use strict';
+const GENERATOR = require('./outpost');
+const MEOW = require('meow');
+
+const options = [
+    {
+        name: 'minedOreDirection',
+        alias: 'direction',
+        description: '0-3 direction ore should flow when mined (0 is up) (default 2)'
+    },
+    {
+        name: 'trainDirection',
+        alias: 'train',
+        description: '0-3, Side the train station should be on (Must be perpendicular to minedOreDirection) (default 1)'
+
+    },
+    {
+        name: 'minerSpace',
+        alias: 'miner',
+        description: '0-2, space between miners (default 1)'
+    },
+    {
+        name: 'includeRadar',
+        alias: 'radar',
+        description: 'Boolean, whether or not to include a radar (default true)',
+    },
+    {
+        name: 'turretSpacing',
+        alias: null,
+        description: '2-9, spacing between turrets on wall (default 8)'
+    },
+    {
+        name: 'turrets',
+        alias: null,
+        description: 'Boolean, whether turrets are enabled or not (default true)'
+    },
+    {
+        name: 'laserTurrets',
+        alias: 'laser',
+        description: 'Boolean, use laser turrets instead of gun turrets (default true)'
+    },
+    {
+        name: 'includeTrainStation',
+        alias: 'withTrain',
+        description: 'Boolean, whether or not to include a train station (default true)'
+    },
+    {
+        name: 'locomotiveCount',
+        alias: 'locomotives',
+        description: '1+, number of locomotives before cargo wagons (default 2)'
+    },
+    {
+        name: 'cargoWagonCount',
+        alias: 'wagons',
+        description: '1+, number of cargo wagons on train (default 4)'
+    },
+    {
+        name: 'exitRoute',
+        alias: 'exit',
+        description: 'true/false, whether or not there is a route past the train station for single-headed trains (default false)'
+    },
+    {
+        name: 'walls',
+        alias: null,
+        description: 'Whether or not to include walls (default true)'
+    },
+    {
+        name: 'wallSpace',
+        alias: null,
+        description: 'Space between wall and rest of the outpost (default 5)'
+    },
+    {
+        name: 'wallThickness',
+        alias: null,
+        description: 'Number of walls thick the outpost defenses are (default 1)'
+    },
+    {
+        name: 'undergroundBelts',
+        alias: null,
+        description: 'Use underground belts in front of miners instead of regular belts'
+    },
+    {
+        name: 'beltName',
+        alias: 'belt',
+        description: 'Name of type of belt in the format `type` or `type_transport_belt` (default `` which is yellow belt)'
+    },
+    {
+        name: 'useStackInserters',
+        alias: 'useStack',
+        description: 'Boolean, use stack inserters between the buffer chests and cargo wagon instead of fast inserters (default true)'
+    },
+    {
+        name: 'botBased',
+        alias: 'bots',
+        description: 'Boolean, use passive provider and requester chests (default false)'
+    },
+    {
+        name: 'requestItem',
+        alias: null,
+        description: 'Item for requester chests to request if botBased (default iron_ore)'
+    },
+    {
+        name: 'requestAmount',
+        alias: null,
+        description: 'The amount of items each chest requests when bot based (default 4800)'
+    },
+    {
+        name: 'conrete',
+        alias: null,
+        description: 'Name of concrete type (in vanilla either `concrete` or `hazard_conrete`) (default none)'
+    },
+    {
+        name: 'borderConcrete',
+        alias: null,
+        description: 'Type of concrete put on the wall and just inside the walls (default none)'
+    },
+    {
+        name: 'trackConrete',
+        alias: null,
+        description: 'Type of concrete put on the track and just surrounding the track (default none)'
+    },
+    {
+        name: 'balancer',
+        alias: null,
+        description: 'Blueprint string for an NxN balancer if the script does not have any available (N being the # of cargo wagons) (no default)'
+    }];
+
+function validateData(name, data) {
+
+    switch (name) {
+        case 'minedOreDirection':
+        case 'trainDirection': {
+            if (parseInt(data) < 0 || parseInt(data) > 3) {
+                showMessageAndExit(name + ' needs to be between 0 and 3')
+            }
+            break;
+        }
+        case 'minerSpace': {
+            if (parseInt(data) < 0 || parseInt(data) > 2) {
+                showMessageAndExit(name + ' needs to be between 0 and 2')
+            }
+            break;
+        }
+        case 'turretSpacing': {
+            if (parseInt(data) < 2 || parseInt(data) > 9) {
+                showMessageAndExit(name + ' needs to be between 2 and 9')
+            }
+            break;
+        }
+        case 'requestAmount':
+        case 'cargoWagonCount':
+        case 'locomotiveCount': {
+            if (parseInt(data) <= 0) {
+                showMessageAndExit(name + ' needs to be higher than 0')
+            }
+            break;
+        }
+        default: {
+            return data;
+        }
+    }
+
+}
+
+function showMessageAndExit(message, code = 1) {
+    console.error(message);
+    process.exit(code);
+}
+
+let usageOptions = '';
+let aliases = {};
+
+options.forEach(function (val) {
+    let alias = '';
+
+    if (val.alias !== null) {
+        alias = ' -' + val.alias;
+        aliases[val.alias] = val.name;
+    }
+
+    usageOptions += `--${val.name},${alias} ${val.description}
+    `;
+
+});
+
+const cli = MEOW(`
+	Usage
+	  $ outpost-gen blueprintstring
+	Options
+	  ${usageOptions}
+	Examples
+	  $ outpost-gen 0eNqNj8EKwj... --minedOreDirection=1 --radar=true --locomotives=1 --wagons=2`, {
+    alias: aliases
+});
+
+
+let blueprint = '';
+if (cli.input.length === 0) {
+    cli.showHelp();
+    return;
+} else {
+    blueprint = cli.input[0]
+}
+
+let opts = {};
+
+let args = cli.flags;
+
+options.forEach(function (val) {
+    if (args.hasOwnProperty(val.name)) {
+        opts[val.name] = validateData(val.name, args[val.name]);
+    }
+});
+
+try {
+    console.log(GENERATOR(blueprint, opts));
+} catch (e) {
+    console.log(e.message);
+}
