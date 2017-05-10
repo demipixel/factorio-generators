@@ -60,6 +60,11 @@ module.exports = function(string, opt) {
   });
 
   old.entities.forEach(ent => {
+    if (!Blueprint.getEntityData()[ent.name]) {
+      const obj = {};
+      obj[ent.name] = { type: 'item' };
+      Blueprint.setEntityData(obj);
+    }
     if (ent.changed || !MODIFIED_ONLY) bp.createEntityWithData(ent.getData(), true, true, true); // Allow overlap in case modded items with unknown size
   });
 
