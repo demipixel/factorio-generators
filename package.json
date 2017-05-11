@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "factorio-blueprint": "^2.0.14"
+    "factorio-blueprint": "^2.0.14",
+    "meow": "^3.7.0"
   }
 }
