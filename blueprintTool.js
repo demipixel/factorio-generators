@@ -11,12 +11,10 @@ module.exports = function(string, opt) {
   const MODULE_REPLACE = opt.moduleReplace || [];
   const MODIFIED_ONLY = opt.modifiedOnly || false;
 
-  const old = new Blueprint(string);
-  const bp = new Blueprint();
-
-  const changed = [];
-
   const newEntityData = {};
+
+  const old = new Blueprint(string, { checkWithEntityData: false });
+  const bp = new Blueprint();
 
   [ENTITY_REPLACE, RECIPE_REPLACE, MODULE_REPLACE].forEach(replaceType => {
     replaceType.forEach(replace => {
