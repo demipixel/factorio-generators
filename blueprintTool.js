@@ -11,12 +11,10 @@ module.exports = function(string, opt) {
   const MODULE_REPLACE = opt.moduleReplace || [];
   const MODIFIED_ONLY = opt.modifiedOnly || false;
 
-  const old = new Blueprint(string);
-  const bp = new Blueprint();
-
-  const changed = [];
-
   const newEntityData = {};
+
+  const old = new Blueprint(string, { checkWithEntityData: false });
+  const bp = new Blueprint();
 
   [ENTITY_REPLACE, RECIPE_REPLACE, MODULE_REPLACE].forEach(replaceType => {
     replaceType.forEach(replace => {
@@ -60,6 +58,11 @@ module.exports = function(string, opt) {
   });
 
   old.entities.forEach(ent => {
+    if (!Blueprint.getEntityData()[ent.name]) {
+      const obj = {};
+      obj[ent.name] = { type: 'item' };
+      Blueprint.setEntityData(obj);
+    }
     if (ent.changed || !MODIFIED_ONLY) bp.createEntityWithData(ent.getData(), true, true, true); // Allow overlap in case modded items with unknown size
   });
 
