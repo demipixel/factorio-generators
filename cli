@@ -2,6 +2,7 @@
 'use strict';
 const GENERATOR = require('./outpost');
 const MEOW = require('meow');
+const YAML = require('yamljs');
 
 const options = [
     {
@@ -124,6 +125,11 @@ const options = [
         name: 'balancer',
         alias: null,
         description: 'Blueprint string for an NxN balancer if the script does not have any available (N being the # of cargo wagons) (no default)'
+    },
+    {
+        name: 'useFile',
+        alias: 'file',
+        description: 'Use Yaml File for config instead of cli arguments'
     }];
 
 function validateData(name, data) {
@@ -161,10 +167,19 @@ function validateData(name, data) {
         }
     }
 
+    return data;
+
 }
 
 function showMessageAndExit(message, code = 1) {
-    console.error(message);
+    if (Array.isArray(message)) {
+        message.forEach(function (val) {
+            console.error(val);
+        })
+    } else {
+        console.error(message);
+    }
+
     process.exit(code);
 }
 
@@ -190,12 +205,14 @@ const cli = MEOW(`
 	Options
 	  ${usageOptions}
 	Examples
-	  $ outpost-gen 0eNqNj8EKwj... --minedOreDirection=1 --radar=true --locomotives=1 --wagons=2`, {
+	  $ outpost-gen 0eNqNj8EKwj... --minedOreDirection=1 --radar=true --locomotives=1 --wagons=2
+	  $ outpost-gen 0eNqNj8EKwj... --useFile=config.yaml`, {
     alias: aliases
 });
 
 
 let blueprint = '';
+//if no input (arguments without -- prefixed) show help and exit the program
 if (cli.input.length === 0) {
     cli.showHelp();
     return;
@@ -204,14 +221,39 @@ if (cli.input.length === 0) {
 }
 
 let opts = {};
-
+//load arguments from cli object
 let args = cli.flags;
 
+//check if useFile argument is available
+if (args.hasOwnProperty('useFile')) {
+    try {
+        //load arguments from yaml file instead of cli arguments
+        args = YAML.load(args['useFile']);
+    } catch (e) {
+        showMessageAndExit(e.message);
+    }
+}
 options.forEach(function (val) {
     if (args.hasOwnProperty(val.name)) {
         opts[val.name] = validateData(val.name, args[val.name]);
+        //delete processed keys from arguments array
+        delete args[val.name]
     }
 });
+
+//if arguments has still elements (arguments that are not in the options array)
+if (Object.keys(args).length >= 1) {
+    let messages = [];
+    for( let key in args) {
+        if(!args.hasOwnProperty(key)) {
+            continue;
+        }
+        //push new message to array
+        messages.push(`Invalid Option: ${key}`);
+    }
+    //show all invalid options and exit the program
+    showMessageAndExit(messages);
+}
 
 try {
     console.log(GENERATOR(blueprint, opts));

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "factorio-blueprint": "^2.0.14",
-    "meow": "^3.7.0"
+    "meow": "^3.7.0",
+    "yamljs": "^0.2.10"
   }
 }
