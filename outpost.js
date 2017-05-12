@@ -71,7 +71,7 @@ module.exports = function(string, opt) {
   const newEntityData = {};
   newEntityData[REQUEST_TYPE] = { type: 'item' };
   newEntityData[BELT_NAME+'transport_belt'] = { type: 'item', width: 1, height: 1 };
-  newEntityData[BELT_NAME+'splitter'] = { type: 'item', width: 1, height: 1 };
+  newEntityData[BELT_NAME+'splitter'] = { type: 'item', width: 2, height: 1 };
   newEntityData[BELT_NAME+'underground_belt'] = { type: 'item', width: 1, height: 1, directionType: true };
 
   newEntityData[MINING_DRILL_NAME] = { type: 'item', width: 3, height: 3 };
