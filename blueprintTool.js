@@ -14,7 +14,7 @@ module.exports = function(string, opt) {
   const newEntityData = {};
 
   const old = new Blueprint(string, { checkWithEntityData: false });
-  const bp = new Blueprint();
+  const bp = new Blueprint(null, { checkWithEntityData: false });
 
   [ENTITY_REPLACE, RECIPE_REPLACE, MODULE_REPLACE].forEach(replaceType => {
     replaceType.forEach(replace => {
