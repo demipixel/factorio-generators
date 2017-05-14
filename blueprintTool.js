@@ -36,6 +36,15 @@ module.exports = function(string, opt) {
     });
   });
 
+  old.tiles.forEach(tile => {
+    ENTITY_REPLACE.forEach(replace => {
+      if (tile.name == bp.jsName(replace.from) || tile.name.includes(bp.jsName(replace.includes))) {
+        tile.name = bp.jsName(replace.to);
+        tile.changed = true;
+      }
+    });
+  });
+
   old.entities.forEach(ent => {
     RECIPE_REPLACE.forEach(replace => {
       if (ent.recipe == bp.jsName(replace.from) || ent.recipe.includes(bp.jsName(replace.includes))) {
@@ -68,6 +77,10 @@ module.exports = function(string, opt) {
 
   bp.entities.forEach(ent => {
     ent.place(bp.entityPositionGrid, bp.entities);
+  });
+
+  old.tiles.forEach(tile => {
+    if (tile.changed || !MODIFIED_ONLY) bp.createTileWithData(tile.getData());
   });
 
   if (FLIP_X) {
