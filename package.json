@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "factorio-blueprint": "^2.0.14",
+    "factorio-blueprint": "git+https://github.com/demipixel/factorio-blueprint.git",
     "meow": "^3.7.0",
     "yamljs": "^0.2.10"
   }
