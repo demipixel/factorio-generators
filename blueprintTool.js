@@ -84,29 +84,51 @@ module.exports = function(string, opt) {
   });
 
   if (FLIP_X) {
+    const MAP = {
+      2: 6,
+      6: 2,
+
+      1: 7,
+      7: 1,
+
+      3: 5,
+      5: 3
+    };
     bp.entities.forEach(e => {
       /*if (e.name == 'train_stop') {
         e.position.x = -e.position.x + e.size.x;
         return;
       }*/
       e.position.x = -e.position.x - e.size.x;
-      if (e.direction == 2 || e.direction == 6) {
-        e.direction = e.direction == 2 ? 6 : 2;
-      }
+      if (MAP[e.direction] != undefined) e.direction = MAP[e.direction];
+    });
+    bp.tiles.forEach(e => {
+      e.position.x = -e.position.x - 1;
     });
     bp.fixCenter({ x: 1, y: 0 }); // In case of tracks
   }
 
   if (FLIP_Y) {
+    const MAP = {
+      0: 4,
+      4: 0,
+
+      1: 3,
+      3: 1,
+
+      5: 7,
+      7: 5
+    };
     bp.entities.forEach(e => {
       /*if (e.name == 'train_stop') {
         e.position.x = -e.position.x + e.size.x;
         return;
       }*/
       e.position.y = -e.position.y - e.size.y;
-      if (e.direction == 0 || e.direction == 4) {
-        e.direction = e.direction == 0 ? 4 : 0;
-      }
+      if (MAP[e.direction] != undefined) e.direction = MAP[e.direction];
+    });
+    bp.tiles.forEach(e => {
+      e.position.y = -e.position.y - 1;
     });
     bp.fixCenter({ x: 0, y: 1 }); // In case of tracks
   }

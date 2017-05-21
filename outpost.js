@@ -504,6 +504,9 @@ module.exports = function(string, opt) {
         e.direction = e.direction == 2 ? 6 : 2;
       }
     });
+    bp.tiles.forEach(t => {
+      t.position.x = -t.position.x - 1;
+    });
     bp.fixCenter({ x: 1, y: 0 });
   }
 
