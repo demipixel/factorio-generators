@@ -260,6 +260,8 @@ module.exports = function(string, opt) {
 
   // Generate lanes to cargo wagons, track, and train stop
   if (INCLUDE_TRAIN_STATION) {
+	let RAIL_X = null;
+	
     for (let l = 0; l < FINAL_LANES; l++) {
       let OFFSET_Y = locationForBalancer.y + l;
       let OFFSET_X = locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2);
@@ -307,6 +309,8 @@ module.exports = function(string, opt) {
       if (l == 0) {
         const yPosition = OFFSET_Y - LOCOMOTIVES*7;
         const xPosition = OFFSET_X;
+		
+		RAIL_X = xPosition;
 
         needShift.x = (xPosition + 0.5) % 2; // +1 because the rail grid is based of 0,0 being the center
         needShift.y = (yPosition + 0.5) % 2;
@@ -343,13 +347,26 @@ module.exports = function(string, opt) {
     }
 	
 	//place a pole aligned with miners grid to connect miners grid with train station
-	let pole_x_base = (X_LENGTH - 1) * X_SIZE + MINER_SIZE*2 + 1;
-	let pole_y = (Y_LENGTH - 1) * Y_SIZE + MINER_SIZE;
-	for(let i = 6; i > 2; i++) {
-		let pole_x = pole_x_base + i;
-		if(!bp.findEntity({x: pole_x, y: pole_y})) {
-			bp.createEntity('medium_electric_pole', {x: pole_x, y:pole_y});
-			break;
+	const miners_pole_x = (X_LENGTH - 1) * X_SIZE + MINER_SIZE*2 + 1;
+	const miners_pole_y = (Y_LENGTH - 1) * Y_SIZE + MINER_SIZE;
+	const station_pole_x = RAIL_X - 1;
+	connectPoles_x(bp, miners_pole_x, station_pole_x+1, miners_pole_y);
+	
+	function connectPoles_x(bp, x1, x2, y) {
+		const POLE_REACH = 8;
+		const d = Math.abs(x1 - x2);
+		const xmin = Math.min(x1, x2);
+		const xmax = Math.max(x1, x2);
+		if(d <= POLE_REACH)
+			return;
+		
+		//try to place a pole as far from xmax as possible
+		for(let i = xmax - POLE_REACH; i <= xmax - 1; i++) {
+			const pos = {x: i, y: y};
+			if(bp.findEntity(pos) == null) {
+				bp.createEntity('medium_electric_pole', pos);
+				return connectPoles_x(bp, xmin, i, y);
+			}
 		}
 	}
 
