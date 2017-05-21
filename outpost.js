@@ -152,7 +152,10 @@ module.exports = function(string, opt) {
 
   let locationForBalancer = null;
 
-  if (INCLUDE_RADAR) bp.createEntity('radar', { x: 0, y: -3 });
+  if (INCLUDE_RADAR) {
+	  bp.createEntity('radar', { x: 0, y: -3 });
+	  bp.createEntity('medium_electric_pole', {x: -1, y: -2});
+  }
 
   // Place miners, belts, and merger splitters
   for (let x = 0; x < X_LENGTH; x++) {
@@ -338,6 +341,18 @@ module.exports = function(string, opt) {
         }
       }
     }
+	
+	//place a pole aligned with miners grid to connect miners grid with train station
+	let pole_x_base = (X_LENGTH - 1) * X_SIZE + MINER_SIZE*2 + 1;
+	let pole_y = (Y_LENGTH - 1) * Y_SIZE + MINER_SIZE;
+	for(let i = 6; i > 2; i++) {
+		let pole_x = pole_x_base + i;
+		if(!bp.findEntity({x: pole_x, y: pole_y})) {
+			bp.createEntity('medium_electric_pole', {x: pole_x, y:pole_y});
+			break;
+		}
+	}
+
   } else {
     trainStopLocation = { x: locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2) + FINAL_LANES, y: locationForBalancer.y - 5 };
   }
