@@ -233,6 +233,12 @@ if (args.hasOwnProperty('useFile')) {
         showMessageAndExit(e.message);
     }
 }
+
+if(args.hasOwnProperty('blueprint')) {
+	blueprint = args['blueprint'];
+	delete args['blueprint'];
+}
+
 options.forEach(function (val) {
     if (args.hasOwnProperty(val.name)) {
         opts[val.name] = validateData(val.name, args[val.name]);

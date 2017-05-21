@@ -1,12 +1,11 @@
 const Blueprint = require('factorio-blueprint');
 
 
-
 const BALANCER = {
   1: '0eNqFjs0KgzAQhN9lzhGs2h/yKqUUbZeyoJuQrEWRvHsTe+mtl4VZZj6+DcM4kw8sCruBH04i7HVD5Jf0Y/np6gkWrDTBQPqpJFp8oBgrDb1E74JWA42KZMDypAX2kG4GJMrK9CXuYb3LPA0UcuEfy8C7mOdOikVG1gZrvqmQdxv7I2/wphD38qnrmmPdtufmktIHq6tMlw==',
   2: '0eNp1jsEKg0AQQ/8l57VoUaHzK6UUbYcyoOOyOxZF9t/r2ksvPSYkL9nQDzP7IGqgDfKYNIKuG6K8tBuyZ6tnEMR4hIN2Y1a8+MAxFtEPYsYByUH0yQuoSjcHVhMT/rIOsd51Hvs9SdV/ioOf4l6cNC/vsKI8NQ4rqEwZe5ygn88Obw7xyLd1fa4v5blt2pQ+qhFIlw==',
   4: '0eNqdlt1uwyAMhd/F13TChKRtXmWapv6gCiklCMjUqsq7jzTqVq1ul/gKkYSPg4+Nc4Ft0xkfrEtQX8DuWhehfr9AtAe3aYZn6ewN1GCTOYIAtzkOM3PywcS4SGHjom9DWmxNk6AXYN3enKDGXkyGRN/YlEy4W676DwHGJZusGQVdJ+dP1x23+csa/5MiwLcxL2/dsH9GLpSAcx6KfpD2B6eei3oE4Vs5ojSFKh5QXT5TOIQ2j8+04U2buIWq7ZLvhog+bKAZG8gZ/HJGLOTLUFSzTcIXHi3ZlisKt5pj+c85kUKt5yvDmzIBexvMbnxXEXCUs+mShCsKjlyLyJii4nokJ2gtuHDSNNRc1ySJK/l1j79lad2TqsSKmQa02iX7EpkkdsVMKzmhHtZMNpkFSnKTiiwAhZxGQrckxbmgaFUF40qnRWlm8LOu3NGv/b++++cQ8GVCHL3WWum1VFVZ9f032HrobA==',
-  8: '0eNqlmttu4lAMRf8lz+no2OfOr4yqUS9RFakNKIRRq4p/Hxg6o6oksL37hGhhx/GxnWXj9+b+eddtxn6YmtV70z+sh22z+vnebPun4e75+LfpbdM1q6afupembYa7l+O77nUzdtvtzTTeDdvNepxu7rvnqdm3TT88dq/NSvYtLLLdPPfT1I2fvq7727bphqmf+u5k0N83b7+G3cv94ZMrWVZpm816e/jiejhe+SB2U9rm7fDif8TDFR77sXs4/TcdjfwirNfu8Vy+fshfF/e0eLguHs7Edwdnjk/j+vC6JJ/mbW//ndh6N212x4M9u1y030uG7yXZxRMsni2x82GzIrFT7FZH2OpKi/v9jJw4u16YNTbMqQsTjGE2GMP/YOyHhVgUIms97Hkh0lZxdSpv5UreLruKyFvBbyYZcssZyrJkwktCFzexp7LOB++cuD2V8RNQx1qOiItZ3MMPR1VWHLHcnsMBF2dS+FOxuxqOak/aCIejJlYceBBoNovjD3IthN8TWznVnrY48HhnKJwWnvUWUrbAjrenK86y3rPiCIUHonkQyCeRBnwB1BOtroB6poEesb3QRI+o12/0PmrHg+BoGAfuJgitrnOoH9QS78EQ78EzfvfznkD8HmgSl1nPRFoPyKiQ6K4EUc80yMv153Yo3+hK1PxsDdXeN0ARGh3fNxCFIQqL9kBdiErci15JtsUjiZ6/mpo7+BhY+J8teTEa4slS8aKlwf2w0EHCmaVwJHIKS+GIeGUtB6pccjzi28tQEhbxAT8ltSM+FJOJhmXkAAIrjrgk2kkcyqZEozJidWbFHSBOgzIiXlnGB8Sz4yGcYMEs9jE+lE5ZWfxGnORZcQDacrCDPpROOfKc74ijTczl9HIkLRb9nPmrOWR6lwvbBwDFKFe2DQDEi2PF3fVoLUIDJlEuipJk7ub4snhSbbYNLYH2hDOHe4kkaQMFqCQzdkP1p7BTZKAil0LiK6LNojGQm5UnY3uNrCwYA06qap5QQ8/x6s28DQVjZYkY8UUktZGASXbYhn4JqDQPA8P6WlhxoLmp35gbE9MhcY6Fe8BT4oSle0hd2YWRL+o6q+75hZHFadOlkwgshyvwA7+LrDp0EomdWi9sAn0DgHUPrJw4GoAXDK6s3uywUMSZp89QYRQRlp+ROBDlZ/T22ZiIp0fpTK0UHoqZgkDsRSl+UolsFyDxTK62zCcXsfrk4TJPrD55uOqqo9dwoDJGbD/FC1WH2HeKF86N2HDC0YLacEpspSHWnXCO0WRuC7BiT6w6waAqWkjxM5fctqc1/NWn1f+2+d2N29MHQtDoatUU9vs/+vw94Q=='
+  8: '0eNqlmd2O2jAQhV9l5euk8n8SXqVaVbBrrSxBEiXOahHKu9cpKW13h2CfXiEC/pg59hyPzYUdjpPrB98Gtrsw/9K1I9t9v7DRv7X74/IsnHvHduzdD2GKTwrW7k/Lg+s3yprNBfPtq/tgOzEX4Eg5PxfMtcEH764B/Hpz/tFOp4MbIvo22n30gxvHMgz7duy7IZQHdwyR3ndjHN61y09HZCkLdo4vZl6i+oST+Ti1gVNfcGN/9CHEz4i4vpkrSlMonR0Z3wjM5OcpNnA2J0++mWeVHdnWfNbZtK00m4w0xWaWgmcHpjcCE/llsLVshcxIVG0nquCKUiRPwzxJ8r5WwhStZ3gbuvj6wEJkNKrVzLop9FNg1C9kFcdt2dDZV6gL0MnXKI6OrkG0FBlaSo7WMxmwFCiOlFNK1LuW5F/94F6uH1kKrgBx5e/kU7TVqIekRG9Qv6OVtiiOXgcVoK3K0Ta/0MrVB8S/4kqK3qB0TjYt+UVW6hX3cCEogXiEprW4Ke/bO8IrvKETpDYK7jcTJlJppF+kJ9GA1s4TwrRw95giArzH0TOGtoApQuQ0hOsyiN3vY7DmQJWIB0Vy35403D6SkmuJujONUyCOLAyNbnMJ60Eb1DnpxC2KIzdNXaHelbDB6xo1WjrWBsWRShqOpk7jkE2Mr7yEejQStMCEiTIKNe8UuMZPAJ98y6boZMCGWySkYsF9I0WmCrb3uyrdbYFMDR8c/jqT3cc3oJ8mzIFFb0lS2AJkk35lJXyCSBHZKnQnIM87Fr5EUQnC/seNikrRwiJNMnk5ZSvYx5MirXE3TOI3yLUrfeuKXqyQ66sSOX3xGhdNksCVK50h2kXScWnghpSOy6CtCXl1W1m0tGkcehijaTXae9C4Bly09F8FHGwmaBq6vdA0CW6ykfZcMB/cKQ7985dewY77OCw+q59C91THB+9uGK+errU0UnGl6nn+CfOVfEw='
 };
 
 
@@ -22,6 +21,38 @@ const DIRECTIONS = {
 function useOrDefault(value, def) {
   return isNaN(parseInt(value)) || value == undefined ? def : parseInt(value);
 }
+
+function isUpwardsFacingBelt(ent) {
+	const names = ['transport_belt', 'splitter', 'underground_belt'];
+	let nameOk = false;
+	names.forEach(function(name) {
+		if(ent.name.indexOf(name) > -1) {
+			nameOk = true;
+		}
+	});
+	
+	return nameOk && ent.direction == Blueprint.UP && (!ent.HAS_DIRECTION_TYPE || ent.HAS_DIRECTION_TYPE == 'input' );
+}
+
+//places medium poles along x axis in between given posistions to connect medium poles at (x1, y) and (x2, y)
+function connectPoles_x(bp, x1, x2, y) {
+	const POLE_REACH = 8;
+	const d = Math.abs(x1 - x2);
+	const xmin = Math.min(x1, x2);
+	const xmax = Math.max(x1, x2);
+	if(d <= POLE_REACH)
+		return;
+	
+	//try to place a pole as far from xmax as possible
+	for(let i = xmax - POLE_REACH; i <= xmax - 1; i++) {
+		const pos = {x: i, y: y};
+		if(bp.findEntity(pos) == null) {
+			bp.createEntity('medium_electric_pole', pos);
+			return connectPoles_x(bp, xmin, i, y);
+		}
+	}
+}
+
 
 module.exports = function(string, opt) {
 
@@ -140,9 +171,30 @@ module.exports = function(string, opt) {
       else if (ent.name.includes('underground_belt')) ent.name = BELT_NAME+'underground_belt';
       else if (ent.name.includes('splitter')) ent.name = BELT_NAME+'splitter';
     });
+	
+	const balancerBL = balancerBlueprint.bottomLeft();
+	const balancerTR = balancerBlueprint.topRight();
+	const balancerHeight = Math.abs(balancerTR.y - balancerBL.y);
+	const balancerWidth = Math.abs(balancerTR.x - balancerBL.x);
+	
+	let balancerOffsetX = 0;
+    let balancerOffsetY = 0;
+	
+	//there seems to be a problem with blueprint orientation, so get min and max manually;
+	const xmin = Math.min(balancerBL.x, balancerTR.x);
+	const ymin = Math.min(balancerBL.y, balancerTR.y);
 
-    const balancerOffsetX = 0;
-    const balancerOffsetY = 0;
+	
+	//since some balancers may have non-rectangular form, we find leftmost upwards-facing occupied tile in the bottom row,
+	//and assume that it is the leftmost balancer input.
+	for(let i = 0; i < balancerWidth; i++) {
+		const pos = {x: xmin + i, y: ymin};
+		let ent = balancerBlueprint.findEntity(pos);
+		if(ent != null && isUpwardsFacingBelt(ent)) {
+			balancerOffsetX = -i;
+			break;
+		}
+	}
 
     balancerBlueprint.fixCenter(balancerBlueprint.bottomLeft().subtract({ x: balancerOffsetX, y: balancerOffsetY }));
   }
@@ -152,7 +204,10 @@ module.exports = function(string, opt) {
 
   let locationForBalancer = null;
 
-  if (INCLUDE_RADAR) bp.createEntity('radar', { x: 0, y: -3 });
+  if (INCLUDE_RADAR) {
+	  bp.createEntity('radar', { x: 0, y: -3 });
+	  bp.createEntity('medium_electric_pole', {x: -1, y: -2});
+  }
 
   // Place miners, belts, and merger splitters
   for (let x = 0; x < X_LENGTH; x++) {
@@ -257,6 +312,8 @@ module.exports = function(string, opt) {
 
   // Generate lanes to cargo wagons, track, and train stop
   if (INCLUDE_TRAIN_STATION) {
+	let RAIL_X = null;
+	
     for (let l = 0; l < FINAL_LANES; l++) {
       let OFFSET_Y = locationForBalancer.y + l;
       let OFFSET_X = locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2);
@@ -304,6 +361,8 @@ module.exports = function(string, opt) {
       if (l == 0) {
         const yPosition = OFFSET_Y - LOCOMOTIVES*7;
         const xPosition = OFFSET_X;
+		
+		RAIL_X = xPosition;
 
         needShift.x = (xPosition + 0.5) % 2; // +1 because the rail grid is based of 0,0 being the center
         needShift.y = (yPosition + 0.5) % 2;
@@ -338,6 +397,13 @@ module.exports = function(string, opt) {
         }
       }
     }
+	
+	//place a pole aligned with miners grid to connect miners grid with train station
+	const miners_pole_x = (X_LENGTH - 1) * X_SIZE + MINER_SIZE*2 + 1;
+	const miners_pole_y = (Y_LENGTH - 1) * Y_SIZE + MINER_SIZE;
+	const station_pole_x = RAIL_X - 1;
+	connectPoles_x(bp, miners_pole_x, station_pole_x+1, miners_pole_y);
+	
   } else {
     trainStopLocation = { x: locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2) + FINAL_LANES, y: locationForBalancer.y - 5 };
   }
