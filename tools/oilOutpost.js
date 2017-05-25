@@ -139,8 +139,6 @@ module.exports = function(string, opt={}) {
   target.x += -(target.x % 2) + alignment.x
   target.y += -(target.y % 2) + alignment.y;
 
-  console.log('target', target);
-
   bp.entities.filter(ent => ent.name == 'pumpjack').forEach(pumpjack => {
     let powered = false;
     bp.entities.filter(ent => ent.name == 'medium_electric_pole').forEach(pole => {
@@ -275,33 +273,35 @@ module.exports = function(string, opt={}) {
   const lowerX = bp.topLeft().x;
   const upperY = bp.bottomLeft().y;
 
-  const trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
-    LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS
-  });
+  if (INCLUDE_TRAIN_STATION) {
+    const trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
+      LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS
+    });
 
-  const CONNECT_OFFSET = TANKS % 2 == 0 ? -2 : 0; // Target connects two lower depending on tank directions
+    const CONNECT_OFFSET = TANKS % 2 == 0 ? -2 : 0; // Target connects two lower depending on tank directions
 
-  for (let i = 0; i < WAGONS; i++) {
-    for (let j = 0; j < TANKS; j++) {
-      const pos = {x: target.x + 1 + j*3, y: target.y + CONNECT_OFFSET + i*7};
-      bp.createEntity('storage_tank', pos, ((TANKS - j) % 2 == 0) ^ FLIP_ALL ? 2 : 0);
-      if (i == 0 && j == TANKS - 1) {
-        bp.createEntity('radar', {x: pos.x, y: pos.y - 3});
-        bp.createEntity('medium_electric_pole', {x: pos.x - 1, y: pos.y - 1});
+    for (let i = 0; i < WAGONS; i++) {
+      for (let j = 0; j < TANKS; j++) {
+        const pos = {x: target.x + 1 + j*3, y: target.y + CONNECT_OFFSET + i*7};
+        bp.createEntity('storage_tank', pos, ((TANKS - j) % 2 == 0) ^ FLIP_ALL ? 2 : 0);
+        if (i == 0 && j == TANKS - 1) {
+          bp.createEntity('radar', {x: pos.x, y: pos.y - 3});
+          bp.createEntity('medium_electric_pole', {x: pos.x - 1, y: pos.y - 1});
+        }
       }
     }
-  }
 
-  for (let i = 0; i < WAGONS; i++) {
-    bp.createEntity('pump', {x: target.x + 1 + 3*TANKS, y: target.y + CONNECT_OFFSET + 2 + i*7}, 2);
-    bp.createEntity('medium_electric_pole', {x: target.x + 1 + 3*TANKS, y: target.y + CONNECT_OFFSET + 2 + i*7 + 1});
-  }
+    for (let i = 0; i < WAGONS; i++) {
+      bp.createEntity('pump', {x: target.x + 1 + 3*TANKS, y: target.y + CONNECT_OFFSET + 2 + i*7}, 2);
+      bp.createEntity('medium_electric_pole', {x: target.x + 1 + 3*TANKS, y: target.y + CONNECT_OFFSET + 2 + i*7 + 1});
+    }
 
-  for (let i = 1; i < WAGONS; i++) {
-    bp.createEntity('pipe_to_ground', {x: target.x + 3*TANKS, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7}, 0);
-    bp.createEntity('pipe_to_ground', {x: target.x + 3*TANKS, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7 + 2}, 4);
-    for (let j = 0; j < 3; j++) {
-      bp.createEntity('pipe', {x: target.x + 3*TANKS - j, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7 + 3});
+    for (let i = 1; i < WAGONS; i++) {
+      bp.createEntity('pipe_to_ground', {x: target.x + 3*TANKS, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7}, 0);
+      bp.createEntity('pipe_to_ground', {x: target.x + 3*TANKS, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7 + 2}, 4);
+      for (let j = 0; j < 3; j++) {
+        bp.createEntity('pipe', {x: target.x + 3*TANKS - j, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7 + 3});
+      }
     }
   }
 
