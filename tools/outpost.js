@@ -60,8 +60,8 @@ function connectPoles_x(bp, x1, x2, y) {
 module.exports = function(string, opt={}) {
 
   // Directions
-  const MINE_ORE_DIRECTION = useOrDefault(opt.minedOreDirection, 2);
-  const ORE_EXIT_DIRECTION = useOrDefault(opt.trainDirection, 1);
+  const MINE_ORE_DIRECTION = useOrDefault(opt.trainDirection, 2);
+  const ORE_EXIT_DIRECTION = useOrDefault(opt.trainSide, 1);
 
   // General
   const SPACE_BETWEEN_MINERS = useOrDefault(opt.minerSpace, 1);
