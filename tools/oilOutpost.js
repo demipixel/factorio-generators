@@ -39,8 +39,10 @@ module.exports = function(string, opt={}) {
   const TRAIN_SIDE = useOrDefault(opt.trainSide, 1);
   const TRAIN_DIRECTION = useOrDefault(opt.trainDirection, 2);
 
-  const FLIP_ALL = TRAIN_DIRECTION - TRAIN_SIDE < 0 || (TRAIN_DIRECTION == 0 && TRAIN_SIDE == 3) || (TRAIN_SIDE == 0 && TRAIN_DIRECTION == 3);
-  const ROTATE_ALL = (TRAIN_SIDE - 1 + 4) % 4;
+  const FLIP_ALL = TRAIN_SIDE == TRAIN_DIRECTION + 1 || (TRAIN_SIDE == 0 && TRAIN_DIRECTION == 3);
+  const ROTATE_ALL = (TRAIN_DIRECTION + 2) % 4;
+
+  console.log(FLIP_ALL, ROTATE_ALL);
 
   if (Math.abs(TRAIN_SIDE - TRAIN_DIRECTION) % 2 == 0) throw new Error('opt.trainSide and opt.trainDirection must be perpendicular.');
 
@@ -82,34 +84,39 @@ module.exports = function(string, opt={}) {
   Blueprint.setEntityData(newEntityData);
 
   function getPumpjackOutput(pumpjack) {
-    const flip = (ROTATE_ALL == 1 || ROTATE_ALL == 3) ^ FLIP_ALL; // XOR
-    let offset = PUMPJACK_EXIT_DIRECTION[pumpjack.direction];
-    if (ROTATE_ALL == 1 || ROTATE_ALL == 3) offset.y = 2 - offset.y;
+    const ROTATE_OFFSET = ((4 - ROTATE_ALL) % 4);
+    const ORDER = [0, -1, 2, 3];
+    if (pumpjack.direction % 4 == 0) ORDER.reverse();
+    let offset = {x: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction + ROTATE_ALL*2) % 8].x, y: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction + ROTATE_ALL*2) % 8].y};
+    offset.x = ORDER[(ORDER.indexOf(offset.x) + ROTATE_OFFSET) % ORDER.length];
+    offset.y = ORDER[(ORDER.indexOf(offset.y) + ROTATE_OFFSET) % ORDER.length];
     if (FLIP_ALL) offset.x = 2 - offset.x;
 
     return pumpjack.position.clone().add(offset);
   }
 
   const templateBp = new Blueprint(string);
-  const bp = new Blueprint();
+  let bp = new Blueprint();
+
+  bp.placeBlueprint(templateBp, {x: 0, y: 0}, (4 - ROTATE_ALL) % 4);
 
   if (FLIP_ALL) {
-    templateBp.entities.forEach(e => {
+    bp.entities.forEach(e => {
       /*if (e.name == 'train_stop') {
         e.position.x = -e.position.x + e.size.x;
         return;
       }*/
       e.position.x = -e.position.x - e.size.x;
     });
-    /*templateBp.tiles.forEach(t => {
+    /*bp.tiles.forEach(t => {
       t.position.x = -t.position.x - 1;
     });*/
-    templateBp.fixCenter({ x: 1, y: 0 });
+    bp.fixCenter({ x: 1, y: 0 });
   }
 
-  bp.placeBlueprint(templateBp, {x: 0, y: 0}, (4 - ROTATE_ALL) % 4);
+  bp = new Blueprint(bp.toObject());
 
-  bp.fixCenter({x: 0.5, y: 0.5});
+  bp.fixCenter({x: 0.5, y: 0.5}); // Tracks in a blueprint always offsets everything by 0.5, so let's keep it clean
 
   const alignmentTracks = bp.entities.filter(ent => ent.name == 'straight_rail');
 
@@ -127,12 +134,17 @@ module.exports = function(string, opt={}) {
   alignment.x %= 2;
   alignment.y %= 2;
 
+
+
   bp.entities.forEach(ent => {
     if (ent.name != 'pumpjack') throw new Error('The blueprint must only contain pumpjacks and one track!');
     else if (bp.findEntity(getPumpjackOutput(ent))) {
       throw new Error('A pumpjack is facing into another pumpjack!');
+      // bp.createEntity('pipe', getPumpjackOutput(ent), 0, true)
     }
   });
+
+  // return bp.encode();
 
   let target = new Victor(bp.topRight().x + 1, (bp.topRight().y + bp.bottomRight().y)/2);
 
@@ -143,10 +155,10 @@ module.exports = function(string, opt={}) {
     let powered = false;
     bp.entities.filter(ent => ent.name == 'medium_electric_pole').forEach(pole => {
       if (powered) return;
-      if ((pole.x >= pumpjack.position.x && pole.x - pumpjack.position.x <= 5) || 
-          (pole.y >= pumpjack.position.y && pole.y - pumpjack.position.y <= 5) ||
-          (pole.x < pumpjack.position.x && pumpjack.position.x - pole.x <= 3) ||
-          (pole.y < pumpjack.position.y && pumpjack.position.y - pole.y <= 3)) {
+      if ((pole.position.x - pumpjack.position.x <= 5) && 
+          (pole.position.y - pumpjack.position.y <= 5) &&
+          (pumpjack.position.x - pole.position.x <= 3) &&
+          (pumpjack.position.y - pole.position.y <= 3)) {
         powered = true;
       }
     });
@@ -154,10 +166,11 @@ module.exports = function(string, opt={}) {
 
     const output = getPumpjackOutput(pumpjack);
     const electricPoleLocations = [];
-    for (let x = -1; x <= 3; x += 4) {
-      for (let y = -1; y <= 3; y += 4) {
-        if (x == output.x && y == output.y) continue;
+    for (let x = -1; x <= 3; x++) {
+      for (let y = -1; y <= 3; y++) {
+        if (x != -1 && x != 3 && y != -1 && y != 3) continue; // Only on edges
         const pos = {x: x + pumpjack.position.x, y: y + pumpjack.position.y}
+        if (pos.x == output.x && pos.y == output.y) continue;
         if (x == output.x || y == output.y) electricPoleLocations.push(pos);
         else electricPoleLocations.unshift(pos);
       }
@@ -173,15 +186,18 @@ module.exports = function(string, opt={}) {
         const otherOutput = getPumpjackOutput(ent);
         if (otherOutput.x == x && otherOutput.y == y) blocking = true;
       });
-      bp.createEntity('medium_electric_pole', {x, y});
-      break;
+      if (!blocking) {
+        bp.createEntity('medium_electric_pole', {x, y});
+        break;
+      }
     }
   });
 
   bp.entities.filter(ent => ent.name == 'pumpjack').forEach(pumpjack => {
-    if (bp.findEntity(pumpjack.position.clone().add(PUMPJACK_EXIT_DIRECTION[pumpjack.direction]))) return;
+    if (bp.findEntity(getPumpjackOutput(pumpjack))) return;
+    // if (bp.findEntity(getPumpjackOutput(pumpjack))) bp.findEntity(getPumpjackOutput(pumpjack)).remove();
     const result = aStar({
-      start: pumpjack.position.clone().add(PUMPJACK_EXIT_DIRECTION[pumpjack.direction]),
+      start: getPumpjackOutput(pumpjack),
       isEnd: (node) => {
         if (node.x == target.x && node.y == target.y) return true;
         for (let i = 0; i < SIDES.length; i++) {
@@ -194,7 +210,8 @@ module.exports = function(string, opt={}) {
       },
       neighbor: (node) => {
         return SIDES.map(side => node.clone().add(side))
-                    .filter(pos => !bp.findEntity(pos));
+                    .filter(pos => !bp.findEntity(pos))
+                    .filter(pos => pos.x <= target.x);
       },
       distance: (nodeA, nodeB) => {
         return Math.abs(nodeA.x - nodeB.x)*0.98 + Math.abs(nodeA.y - nodeB.y);
@@ -205,7 +222,7 @@ module.exports = function(string, opt={}) {
       hash: (node) => {
         return node.x + ',' + node.y
       },
-      timeout: 2000
+      timeout: 5000
     });
     if (result.status != 'success') {
       if (result.status == 'noPath') throw new Error('Could not create path for all pipes!');
@@ -283,7 +300,7 @@ module.exports = function(string, opt={}) {
     for (let i = 0; i < WAGONS; i++) {
       for (let j = 0; j < TANKS; j++) {
         const pos = {x: target.x + 1 + j*3, y: target.y + CONNECT_OFFSET + i*7};
-        bp.createEntity('storage_tank', pos, ((TANKS - j) % 2 == 0) ^ FLIP_ALL ? 2 : 0);
+        bp.createEntity('storage_tank', pos, ((TANKS - j) % 2 == 0) ^ FLIP_ALL ? 2 : 0, true);
         if (i == 0 && j == TANKS - 1) {
           bp.createEntity('radar', {x: pos.x, y: pos.y - 3});
           bp.createEntity('medium_electric_pole', {x: pos.x - 1, y: pos.y - 1});
@@ -322,23 +339,28 @@ module.exports = function(string, opt={}) {
   
   fixRail(bp);
 
-  const finalBp = new Blueprint();
-
-  finalBp.placeBlueprint(bp, {x: 0, y: 0}, ROTATE_ALL);
-
   if (FLIP_ALL) {
-    finalBp.entities.forEach(e => {
+    bp.entities.forEach(e => {
       if (e.name == 'train_stop') {
         e.position.x = -e.position.x + e.size.x;
         return;
       }
       e.position.x = -e.position.x - e.size.x;
+      if (e.name != 'pumpjack') {
+        if (e.direction == 2 || e.direction == 6) {
+          e.direction = e.direction == 2 ? 6 : 2;
+        }
+      }
     });
-    finalBp.tiles.forEach(t => {
+    bp.tiles.forEach(t => {
       t.position.x = -t.position.x - 1;
     });
-    finalBp.fixCenter({ x: 1, y: 0 });
+    bp.fixCenter({ x: 1, y: 0 });
   }
+
+  const finalBp = new Blueprint();
+
+  finalBp.placeBlueprint(bp, {x: 0, y: 0}, ROTATE_ALL);
 
 
   // return bp.entities.filter(e => e.name == 'straight_rail').map(e => e.position);
