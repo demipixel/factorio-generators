@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-const GENERATOR = require('./outpost');
+const GENERATOR = require('./index').outpost;
 const MEOW = require('meow');
 const YAML = require('yamljs');
 

@@ -1,4 +1,7 @@
 const Blueprint = require('factorio-blueprint');
+const generateDefenses = require('./lib/defenses');
+const generateTrainStation = require('./lib/trainStation');
+const fixRail = require('./lib/fixRail');
 
 
 const BALANCER = {
@@ -54,9 +57,7 @@ function connectPoles_x(bp, x1, x2, y) {
 }
 
 
-module.exports = function(string, opt) {
-
-  opt = opt || {};
+module.exports = function(string, opt={}) {
 
   // Directions
   const MINE_ORE_DIRECTION = useOrDefault(opt.minedOreDirection, 2);
@@ -79,6 +80,7 @@ module.exports = function(string, opt) {
   const WALL_THICKNESS = useOrDefault(opt.wallThickness, 1);
 
   // Trains
+
   const INCLUDE_TRAIN_STATION = opt.includeTrainStation != undefined ? opt.includeTrainStation : true;
   const LOCOMOTIVES = useOrDefault(opt.locomotiveCount, 2);
   const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4);
@@ -91,7 +93,7 @@ module.exports = function(string, opt) {
 
   // Tiles
   const CONCRETE = opt.concrete || '';
-  const BORDER_CONRETE = opt.borderConcrete || '';
+  const BORDER_CONCRETE = opt.borderConcrete || '';
   const TRACK_CONCRETE = opt.trackConcrete || '';
 
   // Belt shenanigans
@@ -108,7 +110,7 @@ module.exports = function(string, opt) {
   newEntityData[MINING_DRILL_NAME] = { type: 'item', width: 3, height: 3 };
 
   if (CONCRETE) newEntityData[CONCRETE] = { type: 'tile' }
-  if (BORDER_CONRETE && !newEntityData[BORDER_CONRETE]) newEntityData[BORDER_CONRETE] = { type: 'tile' }
+  if (BORDER_CONCRETE && !newEntityData[BORDER_CONCRETE]) newEntityData[BORDER_CONCRETE] = { type: 'tile' }
   if (TRACK_CONCRETE && !newEntityData[TRACK_CONCRETE]) newEntityData[TRACK_CONCRETE] = { type: 'tile' }
   Blueprint.setEntityData(newEntityData);
 
@@ -178,7 +180,7 @@ module.exports = function(string, opt) {
 	const balancerWidth = Math.abs(balancerTR.x - balancerBL.x);
 	
 	let balancerOffsetX = 0;
-    let balancerOffsetY = 0;
+  let balancerOffsetY = 0;
 	
 	//there seems to be a problem with blueprint orientation, so get min and max manually;
 	const xmin = Math.min(balancerBL.x, balancerTR.x);
@@ -303,11 +305,6 @@ module.exports = function(string, opt) {
   // Place balancer
   if (!BOT_BASED) bp.placeBlueprint(balancerBlueprint, locationForBalancer, Blueprint.RIGHT/2);
 
-  let needShift = {
-    x: 0,
-    y: 0
-  };
-
   let trainStopLocation = null;
 
   // Generate lanes to cargo wagons, track, and train stop
@@ -359,42 +356,10 @@ module.exports = function(string, opt) {
       OFFSET_X += 4;
 
       if (l == 0) {
-        const yPosition = OFFSET_Y - LOCOMOTIVES*7;
-        const xPosition = OFFSET_X;
-		
-		RAIL_X = xPosition;
-
-        needShift.x = (xPosition + 0.5) % 2; // +1 because the rail grid is based of 0,0 being the center
-        needShift.y = (yPosition + 0.5) % 2;
-        
-        trainStopLocation = { x: xPosition + 2, y: yPosition };
-        bp.createEntity('train_stop', trainStopLocation, Blueprint.UP);
-        for (let i = 0; i <= (START_TO_CARGO - yPosition) + FINAL_LANES + WALL_SPACE + WALL_THICKNESS + 1; i += 2) {
-          bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
-          if (TRACK_CONCRETE) {
-            const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
-            for (let xOffset = -1; xOffset <= 2; xOffset++) {
-              for (let yOffset = -1; yOffset <= 2; yOffset++) {
-                if (yPosition + i + yOffset > UPPER_Y + WALL_SPACE) continue;
-                bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition + i + yOffset });
-              }
-            }
-          }
-        }
-        if (SINGLE_HEADED_TRAIN) {
-          const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
-          for (let i = 2; i < (yPosition - LOWER_Y) + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
-            bp.createEntity('straight_rail', { x: xPosition, y: yPosition - i }, Blueprint.DOWN);
-            if (TRACK_CONCRETE) {
-              for (let xOffset = -1; xOffset <= 1; xOffset++) {
-                for (let yOffset = -1; yOffset <= 1; yOffset++) {
-                  if (yPosition - i + yOffset < LOWER_Y - WALL_SPACE) continue;
-                  bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition - i + yOffset });
-                }
-              }
-            }
-          }
-        }
+        RAIL_X = OFFSET_X;
+        trainStopLocation = generateTrainStation(bp, {x: OFFSET_X, y: OFFSET_Y}, START_TO_CARGO + FINAL_LANES, {
+          LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS
+        });
       }
     }
 	
@@ -410,88 +375,18 @@ module.exports = function(string, opt) {
 
   // Place walls and laser turrets
 
-  const LOWER_X = -2;
-  const UPPER_X = trainStopLocation.x + 2;
+  const lowerX = -2;
+  const upperX = trainStopLocation.x + 2;
 
-  const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
-  const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
+  const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
+  const upperY = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
 
-  function generateTurret(isX, variable, upper, placePowerpole) {
-    const sign = upper ? 1 : -1;
-    const yPosition = isX ?
-                        ((upper ? UPPER_Y : LOWER_Y - 1) + WALL_SPACE*sign - 3*sign) :
-                        variable;
-    const xPosition = isX ?
-                        (variable) :
-                        (upper ? UPPER_X : LOWER_X - 1) + WALL_SPACE*sign - 3*sign;
-
-    let dir = isX ? (upper ? Blueprint.DOWN : Blueprint.UP) : (upper ? Blueprint.RIGHT : Blueprint.LEFT);
-
-    try {
-      bp.createEntity(USE_LASER_TURRETS ? 'laser_turret' : 'gun_turret', { x: xPosition, y: yPosition }, dir);
-    } catch (e) {}
-    // Try to generate power poles anyway so that they can connect
-    if (USE_LASER_TURRETS && placePowerpole) {
-      const movePowerpoleBehind = (TURRET_SPACING == 2 ? (upper ? -1 : 2) : 0);
-      try {
-        const OFFSET_Y = isX ? movePowerpoleBehind : -1;
-        const OFFSET_X = isX ? -1 : movePowerpoleBehind;
-        bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
-      } catch (e) {
-        const OFFSET_Y = isX ? movePowerpoleBehind : 2;
-        const OFFSET_X = isX ? 2 : movePowerpoleBehind;
-        bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
-      }
-    }
-  }
-
-  if (TURRETS_ENABLED) {
-    for (let x = LOWER_X - WALL_SPACE + 3; x <= UPPER_X + WALL_SPACE - 3; x++) {
-      const placePowerpole = TURRET_SPACING <= 4 ? x % (TURRET_SPACING * 2) == 0 : true;
-      if (x % TURRET_SPACING == 0) {
-        generateTurret(true, x, false, placePowerpole);
-        generateTurret(true, x, true, placePowerpole);
-      }
-    }
-
-    for (let y = LOWER_Y - WALL_SPACE + 1 + 3; y < UPPER_Y + WALL_SPACE - 3; y++) {
-      const placePowerpole = TURRET_SPACING <= 4 ? y % (TURRET_SPACING * 2) == 0 : true;
-      if (y % TURRET_SPACING == 0) {
-        generateTurret(false, y, false, placePowerpole);
-        generateTurret(false, y, true, placePowerpole);
-      }
-    }
-  }
-
-  if (WALLS_ENABLED) {
-    for (let i = 0; i < WALL_THICKNESS; i++) {
-      for (let x = LOWER_X - WALL_SPACE - i; x <= UPPER_X + WALL_SPACE + i; x++) {
-        const ent1 = bp.findEntity({ x: x, y: LOWER_Y - WALL_SPACE - i });
-        const ent2 = bp.findEntity({ x: x, y: UPPER_Y + WALL_SPACE + i });
-        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: x, y: LOWER_Y - WALL_SPACE - i }, Blueprint.RIGHT, true);
-        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: x, y: UPPER_Y + WALL_SPACE + i }, Blueprint.RIGHT, true);
-      }
-      for (let y = LOWER_Y - WALL_SPACE - i; y <= UPPER_Y + WALL_SPACE + i; y++) {
-        const ent1 = bp.findEntity({ x: LOWER_X - WALL_SPACE - i, y: y });
-        const ent2 = bp.findEntity({ x: UPPER_X + WALL_SPACE + i, y: y });
-        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: LOWER_X - WALL_SPACE - i, y: y }, Blueprint.DOWN, true);
-        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: UPPER_X + WALL_SPACE + i, y: y }, Blueprint.DOWN, true);
-      }
-    }
-  }
-
-  for (let y = LOWER_Y - WALL_SPACE - WALL_THICKNESS + 1; y <= UPPER_Y + WALL_SPACE + WALL_THICKNESS - 1; y++) {
-    for (let x = LOWER_X - WALL_SPACE - WALL_THICKNESS + 1; x <= UPPER_X + WALL_SPACE + WALL_THICKNESS - 1; x++) {
-      if (BORDER_CONRETE && (y - LOWER_Y + WALL_SPACE + WALL_THICKNESS <= WALL_THICKNESS + 1 || UPPER_Y + WALL_SPACE + WALL_THICKNESS - y <= WALL_THICKNESS + 1 || x - LOWER_X + WALL_SPACE + WALL_THICKNESS <= WALL_THICKNESS + 1 || UPPER_X + WALL_SPACE + WALL_THICKNESS - x <= WALL_THICKNESS + 1)) {
-        bp.createTile(BORDER_CONRETE, { x: x, y: y});
-      } else if (CONCRETE && !bp.findTile({ x: x, y: y })) {
-        bp.createTile(CONCRETE, { x: x, y: y });
-      }
-    }
-  }
+  generateDefenses(bp, {lowerX, upperX, lowerY, upperY}, {
+    TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE
+  }); // Pass in same opt, same names for defenses
 
   bp.fixCenter();
-  bp.fixCenter(needShift); // Move center some amount between 0 and 2 so rails snap correctly
+  fixRail(bp);
 
   if (ORE_EXIT_DIRECTION == MINE_ORE_DIRECTION + 1 || (ORE_EXIT_DIRECTION == 0 && MINE_ORE_DIRECTION == 3)) {
     bp.entities.forEach(e => {
@@ -510,9 +405,10 @@ module.exports = function(string, opt) {
     bp.fixCenter({ x: 1, y: 0 });
   }
 
-  const final = new Blueprint();
+  const finalBp = new Blueprint();
 
-  final.placeBlueprint(bp, { x: 0, y: 0 }, (MINE_ORE_DIRECTION+2)%4, true);
+  finalBp.placeBlueprint(bp, { x: 0, y: 0 }, (MINE_ORE_DIRECTION+2)%4, true);
+  finalBp.name = 'Ore Outpost - '+finalBp.entities.filter(e => e.name == MINING_DRILL_NAME).length+' Drills';
 
-  return final.encode();
+  return finalBp.encode();
 }
