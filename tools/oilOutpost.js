@@ -292,7 +292,7 @@ module.exports = function(string, opt={}) {
 
   if (INCLUDE_TRAIN_STATION) {
     const trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
-      LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS
+      LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
     });
 
     const CONNECT_OFFSET = TANKS % 2 == 0 ? -2 : 0; // Target connects two lower depending on tank directions

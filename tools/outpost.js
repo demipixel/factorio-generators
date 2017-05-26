@@ -358,7 +358,7 @@ module.exports = function(string, opt={}) {
       if (l == 0) {
         RAIL_X = OFFSET_X;
         trainStopLocation = generateTrainStation(bp, {x: OFFSET_X, y: OFFSET_Y}, START_TO_CARGO + FINAL_LANES, {
-          LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS
+          LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
         });
       }
     }
