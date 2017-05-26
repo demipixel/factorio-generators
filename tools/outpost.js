@@ -60,8 +60,8 @@ function connectPoles_x(bp, x1, x2, y) {
 module.exports = function(string, opt={}) {
 
   // Directions
-  const MINE_ORE_DIRECTION = useOrDefault(opt.trainDirection, 2);
-  const ORE_EXIT_DIRECTION = useOrDefault(opt.trainSide, 1);
+  const TRAIN_DIRECTION = useOrDefault(opt.trainDirection, 2);
+  const TRAIN_SIDE = useOrDefault(opt.trainSide, 1);
 
   // General
   const SPACE_BETWEEN_MINERS = useOrDefault(opt.minerSpace, 1);
@@ -122,8 +122,8 @@ module.exports = function(string, opt={}) {
 
 
 
-  if (Math.abs(MINE_ORE_DIRECTION - ORE_EXIT_DIRECTION) % 2 == 0 && !BOT_BASED) {
-    throw new Error('Ore Exit direction must be perpendicular to Mine Ore direction.');
+  if (Math.abs(TRAIN_DIRECTION - TRAIN_SIDE) % 2 == 0 && !BOT_BASED) {
+    throw new Error('trainSide direction must be perpendicular to trainDirection.');
   }
 
   let templateBlueprint = null;
@@ -153,8 +153,8 @@ module.exports = function(string, opt={}) {
   }
 
   const size = {
-    x: MINE_ORE_DIRECTION % 2 == 0 ? bottomRight.x - topLeft.x : bottomRight.y - topLeft.y,
-    y: MINE_ORE_DIRECTION % 2 == 1 ? bottomRight.x - topLeft.x : bottomRight.y - topLeft.y
+    x: TRAIN_DIRECTION % 2 == 0 ? bottomRight.x - topLeft.x : bottomRight.y - topLeft.y,
+    y: TRAIN_DIRECTION % 2 == 1 ? bottomRight.x - topLeft.x : bottomRight.y - topLeft.y
   };
 
   const bp = new Blueprint();
@@ -388,7 +388,7 @@ module.exports = function(string, opt={}) {
   bp.fixCenter();
   fixRail(bp);
 
-  if (ORE_EXIT_DIRECTION == MINE_ORE_DIRECTION + 1 || (ORE_EXIT_DIRECTION == 0 && MINE_ORE_DIRECTION == 3)) {
+  if (TRAIN_SIDE == TRAIN_DIRECTION + 1 || (TRAIN_SIDE == 0 && TRAIN_DIRECTION == 3)) {
     bp.entities.forEach(e => {
       if (e.name == 'train_stop') {
         e.position.x = -e.position.x + e.size.x;
@@ -407,7 +407,7 @@ module.exports = function(string, opt={}) {
 
   const finalBp = new Blueprint();
 
-  finalBp.placeBlueprint(bp, { x: 0, y: 0 }, (MINE_ORE_DIRECTION+2)%4, true);
+  finalBp.placeBlueprint(bp, { x: 0, y: 0 }, (TRAIN_DIRECTION+2)%4, true);
   finalBp.name = 'Ore Outpost - '+finalBp.entities.filter(e => e.name == MINING_DRILL_NAME).length+' Drills';
 
   return finalBp.encode();
