@@ -57,9 +57,13 @@ module.exports = function(string, opt) {
   old.entities.forEach(ent => {
     if (!ent.modules) return;
     MODULE_REPLACE.forEach(replaceModule => {
-      ent.modules.forEach(mod => {
-        if (mod.item == bp.jsName(replaceModule.from) || mod.item.includes(bp.jsName(replaceModule.includes))) {
-          mod.item = bp.jsName(replaceModule.to);
+      Object.keys(ent.modules).forEach(mod => {
+        if (mod == bp.jsName(replaceModule.from) || mod.includes(bp.jsName(replaceModule.includes))) {
+          const to = bp.jsName(replaceModule.to);
+          if (ent.modules[to]) ent.modules[to] += ent.modules[mod];
+          else ent.modules[to] = ent.modules[mod];
+          delete ent.modules[mod];
+          
           ent.changed = true;
         }
       });

@@ -331,7 +331,7 @@ module.exports = function(string, opt={}) {
 
   if (MODULE) {
     bp.entities.filter(ent => ent.name == 'pumpjack').forEach(ent => {
-      ent.modules = [{ item: bp.fixName(MODULE), count: 3 }];
+      ent.modules[MODULE] = 3;
     });
   }
 
