@@ -30,6 +30,7 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - botBased: Boolean, use passive provider and requester chests (default false)
 - requestItem: Item for requester chests to request if botBased (default iron_ore)
 - requestAmount: The amount of items each chest requests when bot based (default 4800)
+- roboports: Boolean, include roboports by tracks (default false)
 - conrete: Name of concrete type (in vanilla either `concrete` or `hazard_conrete`) (default none)
 - borderConcrete: Type of concrete put on the wall and just inside the walls (default none)
 - trackConrete: Type of concrete put on the track and just surrounding the track (default none)

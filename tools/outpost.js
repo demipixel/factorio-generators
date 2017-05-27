@@ -90,6 +90,7 @@ module.exports = function(string, opt={}) {
   const BOT_BASED = opt.botBased || false;
   const REQUEST_TYPE = opt.requestItem || 'iron_ore';
   const REQUEST_AMOUNT = useOrDefault(opt.requestAmount, 4800);
+  const ROBOPORTS = opt.roboports || false;
 
   // Tiles
   const CONCRETE = opt.concrete || '';
@@ -360,6 +361,14 @@ module.exports = function(string, opt={}) {
         trainStopLocation = generateTrainStation(bp, {x: OFFSET_X, y: OFFSET_Y}, START_TO_CARGO + FINAL_LANES, {
           LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
         });
+
+        if (ROBOPORTS) {
+          for (let i = 0; i < FINAL_LANES*2; i++) {
+            const xPosition = OFFSET_X + 2;
+            const yPosition = OFFSET_Y - Math.ceil(FINAL_LANES/2);
+            bp.createEntity('roboport', {x: xPosition, y: yPosition + i*4});
+          }
+        }
       }
     }
 	
@@ -376,7 +385,7 @@ module.exports = function(string, opt={}) {
   // Place walls and laser turrets
 
   const lowerX = -2;
-  const upperX = trainStopLocation.x + 2;
+  const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0);
 
   const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
   const upperY = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
