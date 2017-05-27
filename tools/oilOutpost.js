@@ -124,7 +124,7 @@ module.exports = function(string, opt={}) {
 
   const alignment = {
     x: alignmentTracks[0].position.x + (TANKS % 2 == 0 ? 1 : 0),
-    y: alignmentTracks[0].position.y + 1 // Add 1 because target is 1 off grid in Y
+    y: alignmentTracks[0].position.y + (LOCOMOTIVES % 2 == 0 ? 1 : 0) + 1 // Add 1 because target is 1 off grid in Y
   };
 
   alignmentTracks[0].remove();
