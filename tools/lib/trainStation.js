@@ -11,10 +11,10 @@ module.exports = function(bp, {x, y}, highY, {LOCOMOTIVES, TRACK_CONCRETE, SINGL
     bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
     // Concrete
     if (TRACK_CONCRETE) {
-      const UPPER_Y = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
+      const UPPER_Y = highY - trainStopLocation.y + WALL_SPACE + (WALLS_ENABLED ? WALL_THICKNESS : 0)
       for (let xOffset = -1; xOffset <= 2; xOffset++) {
         for (let yOffset = -1; yOffset <= 2; yOffset++) {
-          if (yPosition + i + yOffset > UPPER_Y + WALL_SPACE) continue;
+          if (yPosition + i + yOffset > UPPER_Y) continue;
           bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition + i + yOffset });
         }
       }
