@@ -276,7 +276,7 @@ module.exports = function(string, opt={}) {
 
     distanceOut--; // Not going out as far to prevent belt collision and keep compact
 
-    OFFSET_Y = Y_LENGTH * Y_SIZE + distanceOut - (SPACE_BETWEEN_MINERS - 1);
+    const OFFSET_Y = Y_LENGTH * Y_SIZE + distanceOut - (SPACE_BETWEEN_MINERS - 1);
 
     for (let i = 0; i < acrossDistance; i++) {
       const xPosition = OFFSET_X + MINER_SIZE + i; // Just getting the sign from direction data's x/y
