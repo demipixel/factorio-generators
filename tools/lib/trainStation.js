@@ -22,7 +22,7 @@ module.exports = function(bp, {x, y}, highY, {LOCOMOTIVES, TRACK_CONCRETE, SINGL
   }
   if (SINGLE_HEADED_TRAIN) {
     const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
-    for (let i = 2; i < (yPosition - LOWER_Y) + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
+    for (let i = 2; i < Math.max(0, yPosition - LOWER_Y) + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
       bp.createEntity('straight_rail', { x: xPosition, y: yPosition - i }, Blueprint.DOWN);
       // Concrete
       if (TRACK_CONCRETE) {

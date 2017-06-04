@@ -154,8 +154,8 @@ module.exports = function(string, opt={}) {
   }
 
   const size = {
-    x: TRAIN_DIRECTION % 2 == 0 ? bottomRight.x - topLeft.x : bottomRight.y - topLeft.y,
-    y: TRAIN_DIRECTION % 2 == 1 ? bottomRight.x - topLeft.x : bottomRight.y - topLeft.y
+    x: (TRAIN_DIRECTION % 2 == 0 ? bottomRight.x - topLeft.x : bottomRight.y - topLeft.y),
+    y: (TRAIN_DIRECTION % 2 == 1 ? bottomRight.x - topLeft.x : bottomRight.y - topLeft.y)
   };
 
   const bp = new Blueprint();
@@ -212,6 +212,8 @@ module.exports = function(string, opt={}) {
 	  bp.createEntity('medium_electric_pole', {x: -1, y: -2});
   }
 
+  const SPLITTER_ON_LAST = Math.floor((X_LENGTH - 2)*FINAL_LANES/X_LENGTH) == Math.floor((X_LENGTH - 1)*FINAL_LANES/X_LENGTH)
+
   // Place miners, belts, and merger splitters
   for (let x = 0; x < X_LENGTH; x++) {
     const OFFSET_X = x*X_SIZE;
@@ -237,14 +239,15 @@ module.exports = function(string, opt={}) {
       }
 
       if (!BOT_BASED) {
+        const IS_LAST = y == Y_LENGTH - 1;
         if (!UNDERGROUND_BELT) {
-          for (let i = 0; i < Y_SIZE; i++) {
-            bp.createEntity(BELT_NAME+'transport_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + i }, Blueprint.DOWN);
+          for (let i = 0; i < Y_SIZE - (IS_LAST ? 2 : 0); i++) {
+            bp.createEntity(BELT_NAME+'transport_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + i + 1 }, Blueprint.DOWN);
           }
         } else {
           for (let i = 0; i < 2; i++) {
             const secondaryOffset = i*(SPACE_BETWEEN_MINERS + MINER_SIZE);
-            const lastOffset = y == Y_LENGTH - 1 && i == 1 ? -1 : 0;
+            const lastOffset = IS_LAST && i == 1 ? -2 : 0;
             bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + 1 + secondaryOffset }, Blueprint.DOWN)
               .setDirectionType('input');
             bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + SPACE_BETWEEN_MINERS + MINER_SIZE + secondaryOffset + lastOffset }, Blueprint.DOWN)
@@ -258,18 +261,20 @@ module.exports = function(string, opt={}) {
         }
       }
     }
-    const distanceOut = X_LENGTH - x - 1;
+    let distanceOut = X_LENGTH - x - 1;
     
     const connectWithSplitter = Math.floor(x*FINAL_LANES/X_LENGTH) == Math.floor((x+1)*FINAL_LANES/X_LENGTH);
     const finalLane = FINAL_LANES >= X_LENGTH ? X_LENGTH - x - 1 : FINAL_LANES - Math.floor(x*FINAL_LANES/X_LENGTH) - 1;
 
     for (let i = 0; i < distanceOut; i++) { // Go out, before going across
       const xPosition = OFFSET_X + MINER_SIZE;
-      const yPosition = Y_LENGTH*Y_SIZE + i;
+      const yPosition = Y_LENGTH*Y_SIZE + i - 1; // -1 because we've gone in one
       if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.DOWN);
     }
     const cutInEarly = distanceOut == 0 ? 0 : X_SIZE - finalLane;
     const acrossDistance = (connectWithSplitter ? X_SIZE : distanceOut*X_SIZE - cutInEarly) + 2; // Go across (either to hit splitter or go to balancer)
+
+    distanceOut--; // Not going out as far to prevent belt collision and keep compact
 
     for (let i = 0; i < acrossDistance; i++) {
       const xPosition = OFFSET_X + MINER_SIZE + i; // Just getting the sign from direction data's x/y
@@ -281,13 +286,14 @@ module.exports = function(string, opt={}) {
       }
     }
     if (connectWithSplitter) { // Generate spliiter
-      const xPosition = OFFSET_X + MINER_SIZE + X_SIZE + 1
-      const yPosition = Y_LENGTH*Y_SIZE + distanceOut - 1
+      const xPosition = OFFSET_X + MINER_SIZE + X_SIZE + 1;
+      const yPosition = Y_LENGTH*Y_SIZE + distanceOut - 1;
       bp.removeEntityAtPosition({ x: xPosition, y: yPosition }); // Remove belts at splitter
       bp.removeEntityAtPosition({ x: xPosition, y: yPosition + 1 });
       if (!BOT_BASED) bp.createEntity(BELT_NAME+'splitter', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
     } else { // Generate "lowering" to meet other belts
-      for (let i = 0; i < distanceOut - finalLane; i++) {
+      const offsetBecauseSplitterOnLast = SPLITTER_ON_LAST ? 0 : 1;
+      for (let i = 0; i < distanceOut - finalLane + offsetBecauseSplitterOnLast; i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance;
         const yPosition = Y_LENGTH*Y_SIZE + distanceOut - i;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
@@ -295,10 +301,10 @@ module.exports = function(string, opt={}) {
       
       for (let i = 0; i < cutInEarly + Math.max(1, FINAL_LANES - X_SIZE) + (FINAL_LANES <= 2 ? 1 : 0); i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance + i;
-        const yPosition = Y_LENGTH*Y_SIZE + finalLane;
+        const yPosition = Y_LENGTH*Y_SIZE + finalLane - offsetBecauseSplitterOnLast;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
 
-        if (distanceOut == 0) locationForBalancer = { x: xPosition, y: yPosition };
+        if (distanceOut == -1) locationForBalancer = { x: xPosition, y: yPosition };
       }
     }
   }
