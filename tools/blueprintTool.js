@@ -98,13 +98,27 @@ module.exports = function(string, opt) {
       3: 5,
       5: 3
     };
+    const CURVED_MAP = {
+      5: 4,
+      4: 5,
+
+      1: 0,
+      0: 1,
+
+      7: 2,
+      2: 7,
+
+      3: 6,
+      6: 3
+    };
     bp.entities.forEach(e => {
       /*if (e.name == 'train_stop') {
         e.position.x = -e.position.x + e.size.x;
         return;
       }*/
       e.position.x = -e.position.x - e.size.x;
-      if (MAP[e.direction] != undefined) e.direction = MAP[e.direction];
+      if (e.name == 'curved_rail' && CURVED_MAP[e.direction] != undefined ) e.direction = CURVED_MAP[e.direction];
+      else if (e.name != 'curved_rail' && MAP[e.direction] != undefined ) e.direction = MAP[e.direction];
     });
     bp.tiles.forEach(e => {
       e.position.x = -e.position.x - 1;
@@ -123,13 +137,27 @@ module.exports = function(string, opt) {
       5: 7,
       7: 5
     };
+    const CURVED_MAP = {
+      1: 4,
+      4: 1,
+
+      5: 0,
+      0: 5,
+
+      3: 2,
+      2: 3,
+
+      7: 6,
+      6: 7
+    };
     bp.entities.forEach(e => {
       /*if (e.name == 'train_stop') {
         e.position.x = -e.position.x + e.size.x;
         return;
       }*/
       e.position.y = -e.position.y - e.size.y;
-      if (MAP[e.direction] != undefined) e.direction = MAP[e.direction];
+      if (e.name == 'curved_rail' && CURVED_MAP[e.direction] != undefined ) e.direction = CURVED_MAP[e.direction];
+      else if (e.name != 'curved_rail' && MAP[e.direction] != undefined ) e.direction = MAP[e.direction];
     });
     bp.tiles.forEach(e => {
       e.position.y = -e.position.y - 1;
