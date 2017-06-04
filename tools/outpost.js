@@ -241,13 +241,13 @@ module.exports = function(string, opt={}) {
       if (!BOT_BASED) {
         const IS_LAST = y == Y_LENGTH - 1;
         if (!UNDERGROUND_BELT) {
-          for (let i = 0; i < Y_SIZE - (IS_LAST ? SPACE_BETWEEN_MINERS + 2 : 0); i++) {
+          for (let i = 0; i < Y_SIZE - (IS_LAST ? SPACE_BETWEEN_MINERS + 1 : 0); i++) {
             bp.createEntity(BELT_NAME+'transport_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + i + 1 }, Blueprint.DOWN);
           }
         } else {
           for (let i = 0; i < 2; i++) {
             const secondaryOffset = i*(SPACE_BETWEEN_MINERS + MINER_SIZE);
-            const lastOffset = IS_LAST && i == 1 ? -2 : 0;
+            const lastOffset = IS_LAST && i == 1 ? -1 - SPACE_BETWEEN_MINERS : 0;
             bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + 1 + secondaryOffset }, Blueprint.DOWN)
               .setDirectionType('input');
             bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + SPACE_BETWEEN_MINERS + MINER_SIZE + secondaryOffset + lastOffset }, Blueprint.DOWN)
@@ -266,9 +266,9 @@ module.exports = function(string, opt={}) {
     const connectWithSplitter = Math.floor(x*FINAL_LANES/X_LENGTH) == Math.floor((x+1)*FINAL_LANES/X_LENGTH);
     const finalLane = FINAL_LANES >= X_LENGTH ? X_LENGTH - x - 1 : FINAL_LANES - Math.floor(x*FINAL_LANES/X_LENGTH) - 1;
 
-    for (let i = 0; i < distanceOut + 1; i++) { // Go out, before going across
+    for (let i = 0; i < distanceOut; i++) { // Go out, before going across
       const xPosition = OFFSET_X + MINER_SIZE;
-      const yPosition = Y_LENGTH*Y_SIZE + i - SPACE_BETWEEN_MINERS - 1; // -1 because we've gone in one
+      const yPosition = Y_LENGTH*Y_SIZE + i - SPACE_BETWEEN_MINERS;
       if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.DOWN);
     }
     const cutInEarly = distanceOut == 0 ? 0 : X_SIZE - finalLane;
