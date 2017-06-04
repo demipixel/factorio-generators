@@ -34,7 +34,7 @@ function isUpwardsFacingBelt(ent) {
 		}
 	});
 	
-	return nameOk && ent.direction == Blueprint.UP && (!ent.HAS_DIRECTION_TYPE || ent.HAS_DIRECTION_TYPE == 'input' );
+	return nameOk && ent.direction == Blueprint.UP && (!ent.directionType || ent.directionType == 'input');
 }
 
 //places medium poles along x axis in between given posistions to connect medium poles at (x1, y) and (x2, y)
@@ -185,13 +185,13 @@ module.exports = function(string, opt={}) {
 	
 	//there seems to be a problem with blueprint orientation, so get min and max manually;
 	const xmin = Math.min(balancerBL.x, balancerTR.x);
-	const ymin = Math.min(balancerBL.y, balancerTR.y);
+	const ymax = Math.max(balancerBL.y, balancerTR.y) - 1;
 
 	
 	//since some balancers may have non-rectangular form, we find leftmost upwards-facing occupied tile in the bottom row,
 	//and assume that it is the leftmost balancer input.
 	for(let i = 0; i < balancerWidth; i++) {
-		const pos = {x: xmin + i, y: ymin};
+		const pos = {x: xmin + i, y: ymax};
 		let ent = balancerBlueprint.findEntity(pos);
 		if(ent != null && isUpwardsFacingBelt(ent)) {
 			balancerOffsetX = -i;
@@ -218,14 +218,14 @@ module.exports = function(string, opt={}) {
   for (let x = 0; x < X_LENGTH; x++) {
     const OFFSET_X = x*X_SIZE;
     for (let y = 0; y < Y_LENGTH; y++) {
-      const OFFSET_Y = y*Y_SIZE;
+      let OFFSET_Y = y*Y_SIZE;
 
       const miningDrillEntities = [];
 
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y }, Blueprint.RIGHT));
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.RIGHT));
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y }, Blueprint.LEFT));
-      miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.LEFT));
+      miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.LEFT, true));
       bp.createEntity('medium_electric_pole', { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE });
 
       if (MODULE) {
@@ -241,7 +241,7 @@ module.exports = function(string, opt={}) {
       if (!BOT_BASED) {
         const IS_LAST = y == Y_LENGTH - 1;
         if (!UNDERGROUND_BELT) {
-          for (let i = 0; i < Y_SIZE - (IS_LAST ? 2 : 0); i++) {
+          for (let i = 0; i < Y_SIZE - (IS_LAST ? SPACE_BETWEEN_MINERS + 2 : 0); i++) {
             bp.createEntity(BELT_NAME+'transport_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + i + 1 }, Blueprint.DOWN);
           }
         } else {
@@ -266,9 +266,9 @@ module.exports = function(string, opt={}) {
     const connectWithSplitter = Math.floor(x*FINAL_LANES/X_LENGTH) == Math.floor((x+1)*FINAL_LANES/X_LENGTH);
     const finalLane = FINAL_LANES >= X_LENGTH ? X_LENGTH - x - 1 : FINAL_LANES - Math.floor(x*FINAL_LANES/X_LENGTH) - 1;
 
-    for (let i = 0; i < distanceOut; i++) { // Go out, before going across
+    for (let i = 0; i < distanceOut + 1; i++) { // Go out, before going across
       const xPosition = OFFSET_X + MINER_SIZE;
-      const yPosition = Y_LENGTH*Y_SIZE + i - 1; // -1 because we've gone in one
+      const yPosition = Y_LENGTH*Y_SIZE + i - SPACE_BETWEEN_MINERS - 1; // -1 because we've gone in one
       if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.DOWN);
     }
     const cutInEarly = distanceOut == 0 ? 0 : X_SIZE - finalLane;
@@ -276,9 +276,11 @@ module.exports = function(string, opt={}) {
 
     distanceOut--; // Not going out as far to prevent belt collision and keep compact
 
+    OFFSET_Y = Y_LENGTH * Y_SIZE + distanceOut - (SPACE_BETWEEN_MINERS - 1);
+
     for (let i = 0; i < acrossDistance; i++) {
       const xPosition = OFFSET_X + MINER_SIZE + i; // Just getting the sign from direction data's x/y
-      const yPosition = Y_LENGTH*Y_SIZE + distanceOut;
+      const yPosition = OFFSET_Y;
       if (!bp.findEntity({ x: xPosition, y: yPosition })) {
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
 
@@ -287,7 +289,7 @@ module.exports = function(string, opt={}) {
     }
     if (connectWithSplitter) { // Generate spliiter
       const xPosition = OFFSET_X + MINER_SIZE + X_SIZE + 1;
-      const yPosition = Y_LENGTH*Y_SIZE + distanceOut - 1;
+      const yPosition = OFFSET_Y - 1;
       bp.removeEntityAtPosition({ x: xPosition, y: yPosition }); // Remove belts at splitter
       bp.removeEntityAtPosition({ x: xPosition, y: yPosition + 1 });
       if (!BOT_BASED) bp.createEntity(BELT_NAME+'splitter', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
@@ -295,14 +297,14 @@ module.exports = function(string, opt={}) {
       const offsetBecauseSplitterOnLast = SPLITTER_ON_LAST ? 0 : 1;
       for (let i = 0; i < distanceOut - finalLane + offsetBecauseSplitterOnLast; i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance;
-        const yPosition = Y_LENGTH*Y_SIZE + distanceOut - i;
+        const yPosition = OFFSET_Y - i;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
       }
       
       for (let i = 0; i < cutInEarly + Math.max(1, FINAL_LANES - X_SIZE) + (FINAL_LANES <= 2 ? 1 : 0); i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance + i;
-        const yPosition = Y_LENGTH*Y_SIZE + finalLane - offsetBecauseSplitterOnLast;
-        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
+        const yPosition = OFFSET_Y - distanceOut + finalLane - offsetBecauseSplitterOnLast;
+        if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT, true);
 
         if (distanceOut == -1) locationForBalancer = { x: xPosition, y: yPosition };
       }
@@ -310,7 +312,7 @@ module.exports = function(string, opt={}) {
   }
 
   // Place balancer
-  if (!BOT_BASED) bp.placeBlueprint(balancerBlueprint, locationForBalancer, Blueprint.RIGHT/2);
+  if (!BOT_BASED) bp.placeBlueprint(balancerBlueprint, locationForBalancer, Blueprint.RIGHT/2, true);
 
   let trainStopLocation = null;
 
