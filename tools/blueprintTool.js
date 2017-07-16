@@ -18,7 +18,7 @@ module.exports = function(string, opt) {
   // is book?
   const isBook = Blueprint.isBook(string);
   if(isBook){
-      blueprints = Blueprint.getBook(string);
+      blueprints = Blueprint.getBook(string,{ checkWithEntityData: false });
   }
   for (let name in blueprints){
     let old = blueprints[name];
