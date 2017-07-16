@@ -1,5 +1,5 @@
 const Blueprint = require('factorio-blueprint');
-
+require('underscore');
 module.exports = function(string, opt) {
   
   opt = opt || {};
@@ -21,8 +21,7 @@ module.exports = function(string, opt) {
   if(isBook){
       blueprints = Blueprint.getBook(string);
   }
-
-  blueprints.forEach((old, name) => {
+  _.each(blueprints,(old, name) => {
 
     const bp = new Blueprint(null, { checkWithEntityData: false });
 
