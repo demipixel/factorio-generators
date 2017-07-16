@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "a-star": "git+https://github.com/andrewrk/node-astar.git",
-    "factorio-blueprint": "git+https://github.com/gamestailer94/factorio-blueprint.git",
+    "factorio-blueprint": "git+https://github.com/demipixel/factorio-blueprint.git",
     "meow": "^3.7.0",
     "yamljs": "^0.2.10"
   }
