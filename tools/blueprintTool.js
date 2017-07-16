@@ -16,7 +16,7 @@ module.exports = function(string, opt) {
   let newBP = {};
 
   // is book?
-  const isBook = (Blueprint.getBook(string)).length > 1;
+  const isBook = Blueprint.isBook(string);
   if(isBook){
       blueprints = Blueprint.getBook(string);
   }
