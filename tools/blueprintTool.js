@@ -174,7 +174,7 @@ module.exports = function(string, opt) {
       bp.fixCenter({ x: 0, y: 1 }); // In case of tracks
     }
 
-    newBP.push(pb);
+    newBP.push(bp);
   }
 
   if(isBook){
