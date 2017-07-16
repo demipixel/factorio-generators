@@ -1,5 +1,5 @@
 const Blueprint = require('factorio-blueprint');
-require('underscore');
+const _ = require('underscore');
 module.exports = function(string, opt) {
   
   opt = opt || {};
