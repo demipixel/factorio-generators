@@ -20,7 +20,8 @@ module.exports = function(string, opt) {
   if(isBook){
       blueprints = Blueprint.getBook(string,{ checkWithEntityData: false });
   }
-  blueprints.forEach((old) => {
+  for (let name in blueprints){
+    let old = blueprints[name];
 
     const bp = new Blueprint(null, { checkWithEntityData: false });
 
@@ -174,7 +175,7 @@ module.exports = function(string, opt) {
     }
 
     newBP.push(pb);
-  });
+  }
 
   if(isBook){
     return Blueprint.toBook(newBP,string);
