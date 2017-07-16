@@ -173,10 +173,14 @@ module.exports = function(string, opt) {
       });
       bp.fixCenter({ x: 0, y: 1 }); // In case of tracks
     }
-
-    newBP.push(bp);
+    if(isBook){
+      let finalBP = bp.toObject();
+      finalBP.blueprint.label = old.name;
+      newBP.push(finalBP);
+    }else{
+      newBP.push(bp);
+    }
   }
-
   if(isBook){
     return Blueprint.toBook(newBP,string);
   }else{
