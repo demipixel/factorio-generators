@@ -12,16 +12,15 @@ module.exports = function(string, opt) {
 
   const newEntityData = {};
 
-  let blueprints = {'0': new Blueprint(string, { checkWithEntityData: false })};
-  let newBP = {};
+  let blueprints = [new Blueprint(string, { checkWithEntityData: false })];
+  let newBP = [];
 
   // is book?
   const isBook = Blueprint.isBook(string);
   if(isBook){
       blueprints = Blueprint.getBook(string,{ checkWithEntityData: false });
   }
-  for (let name in blueprints){
-    let old = blueprints[name];
+  blueprints.forEach((old) => {
 
     const bp = new Blueprint(null, { checkWithEntityData: false });
 
@@ -174,8 +173,8 @@ module.exports = function(string, opt) {
       bp.fixCenter({ x: 0, y: 1 }); // In case of tracks
     }
 
-    newBP[name] = bp;
-  }
+    newBP.push(pb);
+  });
 
   if(isBook){
     return Blueprint.toBook(newBP,string);
