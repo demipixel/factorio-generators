@@ -1,6 +1,6 @@
 const Blueprint = require('factorio-blueprint');
 module.exports = function(string, opt) {
-  
+
   opt = opt || {};
 
   const FLIP_X = opt.flipX || false;
@@ -24,6 +24,8 @@ module.exports = function(string, opt) {
     let old = blueprints[name];
 
     const bp = new Blueprint(null, { checkWithEntityData: false });
+    bp.name = old.name;
+    newBP.push(bp);
 
     [ENTITY_REPLACE, RECIPE_REPLACE, MODULE_REPLACE].forEach(replaceType => {
       replaceType.forEach(replace => {
@@ -72,7 +74,7 @@ module.exports = function(string, opt) {
             if (ent.modules[to]) ent.modules[to] += ent.modules[mod];
             else ent.modules[to] = ent.modules[mod];
             delete ent.modules[mod];
-            
+
             ent.changed = true;
           }
         });
@@ -173,16 +175,9 @@ module.exports = function(string, opt) {
       });
       bp.fixCenter({ x: 0, y: 1 }); // In case of tracks
     }
-    if(isBook){
-      let finalBP = bp.toObject();
-      finalBP.blueprint.label = old.name;
-      newBP.push(finalBP);
-    }else{
-      newBP.push(bp);
-    }
   }
   if(isBook){
-    return Blueprint.toBook(newBP,string);
+    return Blueprint.toBook(newBP);
   }else{
     return newBP[0].encode();
   }
