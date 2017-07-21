@@ -33,7 +33,7 @@ function isUpwardsFacingBelt(ent) {
 			nameOk = true;
 		}
 	});
-	
+
 	return nameOk && ent.direction == Blueprint.UP && (!ent.directionType || ent.directionType == 'input');
 }
 
@@ -45,7 +45,7 @@ function connectPoles_x(bp, x1, x2, y) {
 	const xmax = Math.max(x1, x2);
 	if(d <= POLE_REACH)
 		return;
-	
+
 	//try to place a pole as far from xmax as possible
 	for(let i = xmax - POLE_REACH; i <= xmax - 1; i++) {
 		const pos = {x: i, y: y};
@@ -99,6 +99,8 @@ module.exports = function(string, opt={}) {
 
   // Belt shenanigans
   const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
+  const COMPACT = (UNDERGROUND_BELT && !!opt.compact) || false;
+
   let BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
   if (BELT_NAME.length > 0 && BELT_NAME[BELT_NAME.length - 1] != '_') BELT_NAME += '_';
 
@@ -162,7 +164,7 @@ module.exports = function(string, opt={}) {
 
   const MINER_SIZE = 3;
   const Y_SIZE = (MINER_SIZE + SPACE_BETWEEN_MINERS)*2;
-  const X_SIZE = (MINER_SIZE + 1)*2;
+  const X_SIZE = MINER_SIZE*2 + (COMPACT ? 1 : 2);
 
   let balancerBlueprint = null;
 
@@ -174,20 +176,20 @@ module.exports = function(string, opt={}) {
       else if (ent.name.includes('underground_belt')) ent.name = BELT_NAME+'underground_belt';
       else if (ent.name.includes('splitter')) ent.name = BELT_NAME+'splitter';
     });
-	
+
 	const balancerBL = balancerBlueprint.bottomLeft();
 	const balancerTR = balancerBlueprint.topRight();
 	const balancerHeight = Math.abs(balancerTR.y - balancerBL.y);
 	const balancerWidth = Math.abs(balancerTR.x - balancerBL.x);
-	
+
 	let balancerOffsetX = 0;
   let balancerOffsetY = 0;
-	
+
 	//there seems to be a problem with blueprint orientation, so get min and max manually;
 	const xmin = Math.min(balancerBL.x, balancerTR.x);
 	const ymax = Math.max(balancerBL.y, balancerTR.y) - 1;
 
-	
+
 	//since some balancers may have non-rectangular form, we find leftmost upwards-facing occupied tile in the bottom row,
 	//and assume that it is the leftmost balancer input.
 	for(let i = 0; i < balancerWidth; i++) {
@@ -226,7 +228,8 @@ module.exports = function(string, opt={}) {
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.RIGHT));
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y }, Blueprint.LEFT));
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.LEFT, true));
-      bp.createEntity('medium_electric_pole', { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE });
+      if (!COMPACT) bp.createEntity('medium_electric_pole', { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE });
+      else bp.createEntity('medium_electric_pole', { x: OFFSET_X + 3, y: OFFSET_Y + MINER_SIZE - 1 });
 
       if (MODULE) {
         miningDrillEntities.forEach(ent => {
@@ -262,7 +265,7 @@ module.exports = function(string, opt={}) {
       }
     }
     let distanceOut = X_LENGTH - x - 1;
-    
+
     const connectWithSplitter = Math.floor(x*FINAL_LANES/X_LENGTH) == Math.floor((x+1)*FINAL_LANES/X_LENGTH);
     const finalLane = FINAL_LANES >= X_LENGTH ? X_LENGTH - x - 1 : FINAL_LANES - Math.floor(x*FINAL_LANES/X_LENGTH) - 1;
 
@@ -300,7 +303,7 @@ module.exports = function(string, opt={}) {
         const yPosition = OFFSET_Y - i;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
       }
-      
+
       for (let i = 0; i < cutInEarly + Math.max(1, FINAL_LANES - X_SIZE) + (FINAL_LANES <= 2 ? 1 : 0); i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance + i;
         const yPosition = OFFSET_Y - distanceOut + finalLane - offsetBecauseSplitterOnLast;
@@ -319,7 +322,7 @@ module.exports = function(string, opt={}) {
   // Generate lanes to cargo wagons, track, and train stop
   if (INCLUDE_TRAIN_STATION) {
 	let RAIL_X = null;
-	
+
     for (let l = 0; l < FINAL_LANES; l++) {
       let OFFSET_Y = locationForBalancer.y + l;
       let OFFSET_X = locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2);
@@ -379,13 +382,13 @@ module.exports = function(string, opt={}) {
         }
       }
     }
-	
+
 	//place a pole aligned with miners grid to connect miners grid with train station
 	const miners_pole_x = (X_LENGTH - 1) * X_SIZE + MINER_SIZE*2 + 1;
 	const miners_pole_y = (Y_LENGTH - 1) * Y_SIZE + MINER_SIZE;
 	const station_pole_x = RAIL_X - 1;
 	connectPoles_x(bp, miners_pole_x, station_pole_x+1, miners_pole_y);
-	
+
   } else {
     trainStopLocation = { x: locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2) + FINAL_LANES, y: locationForBalancer.y - 5 };
   }

@@ -25,7 +25,8 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - wallSpace: Space between wall and rest of the outpost (default 5)
 - wallThickness: Number of walls thick the outpost defenses are (default 1)
 - undergroundBelts: Use underground belts in front of miners instead of regular belts
-- beltName: Name of type of belt in the format `type` or `type_transport_belt` (default `` which is yellow belt)
+- compact: No horizontal spacing between miners, place electric poles in between miners. Requires `undergroundBelts` to be `true`.
+- beltName: Name of type of belt in the format `type` or `type_transport_belt` (default `''` which is yellow belt)
 - useStackInserters: Boolean, use stack inserters between the buffer chests and cargo wagon instead of fast inserters (default true)
 - botBased: Boolean, use passive provider and requester chests (default false)
 - requestItem: Item for requester chests to request if botBased (default iron_ore)
