@@ -288,7 +288,7 @@ module.exports = function(string, opt={}) {
   simplifyPipes(bp, target);
 
   const lowerX = bp.topLeft().x;
-  const upperY = bp.bottomLeft().y;
+  let upperY = bp.bottomLeft().y;
 
   if (INCLUDE_TRAIN_STATION) {
     const trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
