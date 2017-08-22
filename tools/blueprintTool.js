@@ -10,8 +10,6 @@ module.exports = function(string, opt) {
   const MODULE_REPLACE = opt.moduleReplace || [];
   const MODIFIED_ONLY = opt.modifiedOnly || false;
 
-  const newEntityData = {};
-
   let blueprints = [new Blueprint(string, { checkWithEntityData: false })];
   let newBP = [];
 
@@ -20,12 +18,17 @@ module.exports = function(string, opt) {
   if(isBook){
       blueprints = Blueprint.getBook(string,{ checkWithEntityData: false });
   }
-  for (let name in blueprints){
-    let old = blueprints[name];
+  for (let blueprintIndex in blueprints) {
+    let old = blueprints[blueprintIndex];
 
     const bp = new Blueprint(null, { checkWithEntityData: false });
     bp.name = old.name;
     newBP.push(bp);
+
+    const newEntityData = {};
+    old.icons.forEach(icon => {
+      if (!Blueprint.getEntityData()[icon]) newEntityData[icon] = { type: 'item' };
+    });
 
     [ENTITY_REPLACE, RECIPE_REPLACE, MODULE_REPLACE].forEach(replaceType => {
       replaceType.forEach(replace => {

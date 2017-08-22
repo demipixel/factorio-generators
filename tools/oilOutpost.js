@@ -155,7 +155,7 @@ module.exports = function(string, opt={}) {
     let powered = false;
     bp.entities.filter(ent => ent.name == 'medium_electric_pole').forEach(pole => {
       if (powered) return;
-      if ((pole.position.x - pumpjack.position.x <= 5) && 
+      if ((pole.position.x - pumpjack.position.x <= 5) &&
           (pole.position.y - pumpjack.position.y <= 5) &&
           (pumpjack.position.x - pole.position.x <= 3) &&
           (pumpjack.position.y - pole.position.y <= 3)) {
@@ -301,6 +301,7 @@ module.exports = function(string, opt={}) {
       for (let j = 0; j < TANKS; j++) {
         const pos = {x: target.x + 1 + j*3, y: target.y + CONNECT_OFFSET + i*7};
         bp.createEntity('storage_tank', pos, ((TANKS - j) % 2 == 0) ^ FLIP_ALL ? 2 : 0, true);
+        upperY = Math.max(upperY, pos.y + 3); // +3 for size of storage_tank
         if (i == 0 && j == TANKS - 1) {
           bp.createEntity('radar', {x: pos.x, y: pos.y - 3});
           bp.createEntity('medium_electric_pole', {x: pos.x - 1, y: pos.y - 1});
@@ -336,7 +337,7 @@ module.exports = function(string, opt={}) {
   }
 
   bp.fixCenter();
-  
+
   fixRail(bp);
 
   if (FLIP_ALL) {
