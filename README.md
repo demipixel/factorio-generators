@@ -36,6 +36,7 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - borderConcrete: Type of concrete put on the wall and just inside the walls (default none)
 - trackConrete: Type of concrete put on the track and just surrounding the track (default none)
 - balancer: Blueprint string for an NxN balancer if the script does not have any available (N being the # of cargo wagons) (no default)
+- name: Name of blueprint (%drills% is replaced with the # of drills in ore outposts and %pumpjacks% the number of pumpjacks in oil outposts)
 
 ### blueprintTool(blueprintString, opt)
 

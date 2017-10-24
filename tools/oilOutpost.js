@@ -35,14 +35,14 @@ const MAX_UNDERGROUND_REACH = 11; // Includes underground pipes
 module.exports = function(string, opt={}) {
   if (!string) throw new Error('You must provide a blueprint string with pumpjacks!');
 
+  const NAME = useOrDefault(opt.name, 'Oil Outpost - %pumpjacks% Pumpjacks');
+
   // Directions
   const TRAIN_SIDE = useOrDefault(opt.trainSide, 1);
   const TRAIN_DIRECTION = useOrDefault(opt.trainDirection, 2);
 
   const FLIP_ALL = TRAIN_SIDE == TRAIN_DIRECTION + 1 || (TRAIN_SIDE == 0 && TRAIN_DIRECTION == 3);
   const ROTATE_ALL = (TRAIN_DIRECTION + 2) % 4;
-
-  console.log(FLIP_ALL, ROTATE_ALL);
 
   if (Math.abs(TRAIN_SIDE - TRAIN_DIRECTION) % 2 == 0) throw new Error('opt.trainSide and opt.trainDirection must be perpendicular.');
 
@@ -362,11 +362,7 @@ module.exports = function(string, opt={}) {
   const finalBp = new Blueprint();
 
   finalBp.placeBlueprint(bp, {x: 0, y: 0}, ROTATE_ALL);
-
-
-  // return bp.entities.filter(e => e.name == 'straight_rail').map(e => e.position);
-
-  finalBp.name = 'Oil Outpost - '+bp.entities.filter(e => e.name == 'pumpjack').length+' Pumpjacks';
+  finalBp.name = NAME.replace('%pumpjacks%', finalBp.entities.filter(e => e.name == 'pumpjack').length);
 
   return finalBp.encode();
 }
