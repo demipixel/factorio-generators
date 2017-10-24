@@ -35,7 +35,7 @@ const MAX_UNDERGROUND_REACH = 11; // Includes underground pipes
 module.exports = function(string, opt={}) {
   if (!string) throw new Error('You must provide a blueprint string with pumpjacks!');
 
-  const NAME = useOrDefault(opt.name, 'Oil Outpost - %pumpjacks% Pumpjacks');
+  const NAME = opt.name || 'Oil Outpost - %pumpjacks% Pumpjacks';
 
   // Directions
   const TRAIN_SIDE = useOrDefault(opt.trainSide, 1);

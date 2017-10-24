@@ -59,7 +59,7 @@ function connectPoles_x(bp, x1, x2, y) {
 
 module.exports = function(string, opt={}) {
 
-  const NAME = useOrDefault(opt.name, 'Ore Outpost - %drills% Drills');
+  const NAME = opt.name || 'Ore Outpost - %drills% Drills';
 
   // Directions
   const TRAIN_DIRECTION = useOrDefault(opt.trainDirection, 2);
