@@ -228,8 +228,17 @@ module.exports = function(string, opt={}) {
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X,                  y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.RIGHT));
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y }, Blueprint.LEFT));
       miningDrillEntities.push(bp.createEntity(MINING_DRILL_NAME, { x: OFFSET_X + MINER_SIZE + 1, y: OFFSET_Y + MINER_SIZE + SPACE_BETWEEN_MINERS }, Blueprint.LEFT, true));
-      if (!COMPACT) bp.createEntity('medium_electric_pole', { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE });
-      else bp.createEntity('medium_electric_pole', { x: OFFSET_X + 3, y: OFFSET_Y + MINER_SIZE - 1 });
+
+      const NEED_ADDITIONAL_POLES = x == 0 && SPACE_BETWEEN_MINERS >= 2;
+      if (!COMPACT) {
+        const pos = { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE };
+        bp.createEntity('medium_electric_pole', pos);
+        if (NEED_ADDITIONAL_POLES) bp.createEntity('medium_electric_pole', { x: pos.x, y: pos.y + 5 });
+      } else {
+        const pos = { x: OFFSET_X + 3, y: OFFSET_Y + MINER_SIZE - 1 };
+        bp.createEntity('medium_electric_pole', pos);
+        if (NEED_ADDITIONAL_POLES) bp.createEntity('medium_electric_pole', { x: pos.x, y: pos.y + 5 });
+      }
 
       if (MODULE) {
         miningDrillEntities.forEach(ent => {
