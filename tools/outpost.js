@@ -59,6 +59,8 @@ function connectPoles_x(bp, x1, x2, y) {
 
 module.exports = function(string, opt={}) {
 
+  const NAME = opt.name || 'Ore Outpost - %drills% Drills';
+
   // Directions
   const TRAIN_DIRECTION = useOrDefault(opt.trainDirection, 2);
   const TRAIN_SIDE = useOrDefault(opt.trainSide, 1);
@@ -437,7 +439,7 @@ module.exports = function(string, opt={}) {
   const finalBp = new Blueprint();
 
   finalBp.placeBlueprint(bp, { x: 0, y: 0 }, (TRAIN_DIRECTION+2)%4, true);
-  finalBp.name = 'Ore Outpost - '+finalBp.entities.filter(e => e.name == MINING_DRILL_NAME).length+' Drills';
+  finalBp.name = NAME.replace('%drills%', finalBp.entities.filter(e => e.name == MINING_DRILL_NAME).length);
 
   return finalBp.encode();
 }
