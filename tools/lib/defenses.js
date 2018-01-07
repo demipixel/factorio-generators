@@ -1,6 +1,6 @@
 const Blueprint = require('factorio-blueprint');
 
-module.exports = function(bp, {lowerX, upperX, lowerY, upperY}, {TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE}) {
+module.exports = function(bp, {lowerX, upperX, lowerY, upperY}, {TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE}) {
 
   function generateTurret(isX, variable, upper, placePowerpole) {
     const sign = upper ? 1 : -1;
@@ -49,7 +49,7 @@ module.exports = function(bp, {lowerX, upperX, lowerY, upperY}, {TURRETS_ENABLED
     }
   }
 
-  if (WALLS_ENABLED) {
+  if (WALL_THICKNESS > 0) {
     for (let i = 0; i < WALL_THICKNESS; i++) {
       for (let x = lowerX - WALL_SPACE - i; x <= upperX + WALL_SPACE + i; x++) {
         const ent1 = bp.findEntity({ x: x, y: lowerY - WALL_SPACE - i });

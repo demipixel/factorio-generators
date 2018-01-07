@@ -77,7 +77,7 @@ module.exports = function(string, opt={}) {
 
   const WALLS_ENABLED = opt.walls != undefined ? !!opt.walls : true;
   const WALL_SPACE = useOrDefault(opt.wallSpace, 5);
-  const WALL_THICKNESS = useOrDefault(opt.wallThickness, 1);
+  const WALL_THICKNESS = WALLS_ENABLED ? useOrDefault(opt.wallThickness, 1) : 0;
 
   // Trains
 
@@ -379,7 +379,7 @@ module.exports = function(string, opt={}) {
       if (l == 0) {
         RAIL_X = OFFSET_X;
         trainStopLocation = generateTrainStation(bp, {x: OFFSET_X, y: OFFSET_Y}, START_TO_CARGO + FINAL_LANES, {
-          LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
+          LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
         });
 
         if (ROBOPORTS) {
@@ -411,7 +411,7 @@ module.exports = function(string, opt={}) {
   const upperY = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
 
   generateDefenses(bp, {lowerX, upperX, lowerY, upperY}, {
-    TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE
+    TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE
   }); // Pass in same opt, same names for defenses
 
   bp.fixCenter();

@@ -1,17 +1,17 @@
 const Blueprint = require('factorio-blueprint');
 
-module.exports = function(bp, {x, y}, highY, {LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR}) {
+module.exports = function(bp, {x, y}, highY, {LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR}) {
 
   const yPosition = y - LOCOMOTIVES*7;
   const xPosition = x;
 
   const trainStopLocation = { x: xPosition + 2, y: yPosition };
   bp.createEntity('train_stop', trainStopLocation, Blueprint.UP);
-  for (let i = 0; i <= highY - trainStopLocation.y + WALL_SPACE + (WALLS_ENABLED ? WALL_THICKNESS : 0) + 3; i += 2) {
+  for (let i = 0; i <= highY - trainStopLocation.y + WALL_SPACE + WALL_THICKNESS + 3; i += 2) {
     bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
     // Concrete
     if (TRACK_CONCRETE) {
-      const UPPER_Y = highY - trainStopLocation.y + WALL_SPACE + (WALLS_ENABLED ? WALL_THICKNESS : 0)
+      const UPPER_Y = highY + WALL_SPACE + WALL_THICKNESS + 2;
       for (let xOffset = -1; xOffset <= 2; xOffset++) {
         for (let yOffset = -1; yOffset <= 2; yOffset++) {
           if (yPosition + i + yOffset > UPPER_Y) continue;
@@ -26,8 +26,8 @@ module.exports = function(bp, {x, y}, highY, {LOCOMOTIVES, TRACK_CONCRETE, SINGL
       bp.createEntity('straight_rail', { x: xPosition, y: yPosition - i }, Blueprint.DOWN);
       // Concrete
       if (TRACK_CONCRETE) {
-        for (let xOffset = -1; xOffset <= 1; xOffset++) {
-          for (let yOffset = -1; yOffset <= 1; yOffset++) {
+        for (let xOffset = -1; xOffset <= 2; xOffset++) {
+          for (let yOffset = -1; yOffset <= 2; yOffset++) {
             if (yPosition - i + yOffset < LOWER_Y - WALL_SPACE) continue;
             bp.createTile(TRACK_CONCRETE, { x: xPosition + xOffset, y: yPosition - i + yOffset });
           }

@@ -58,7 +58,7 @@ module.exports = function(string, opt={}) {
 
   const WALLS_ENABLED = opt.walls != undefined ? !!opt.walls : true;
   const WALL_SPACE = useOrDefault(opt.wallSpace, 5);
-  const WALL_THICKNESS = useOrDefault(opt.wallThickness, 1);
+  const WALL_THICKNESS = WALLS_ENABLED ? useOrDefault(opt.wallThickness, 1) : 0;
 
   // Trains
   const INCLUDE_TRAIN_STATION = opt.includeTrainStation != undefined ? opt.includeTrainStation : true;
@@ -294,7 +294,7 @@ module.exports = function(string, opt={}) {
 
   if (INCLUDE_TRAIN_STATION) {
     trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
-      LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
+      LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
     });
 
     const CONNECT_OFFSET = TANKS % 2 == 0 ? -2 : 0; // Target connects two lower depending on tank directions
@@ -331,7 +331,7 @@ module.exports = function(string, opt={}) {
   const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
 
   generateDefenses(bp, {lowerX, upperX, lowerY, upperY}, {
-    TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE
+    TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE
   });
 
   if (MODULE) {
