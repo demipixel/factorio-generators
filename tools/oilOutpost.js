@@ -290,8 +290,10 @@ module.exports = function(string, opt={}) {
   const lowerX = bp.topLeft().x;
   let upperY = bp.bottomLeft().y;
 
+  let trainStopLocation = null;
+
   if (INCLUDE_TRAIN_STATION) {
-    const trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
+    trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
       LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
     });
 
@@ -321,10 +323,12 @@ module.exports = function(string, opt={}) {
         bp.createEntity('pipe', {x: target.x + 3*TANKS - j, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7 + 3});
       }
     }
+  } else {
+    trainStopLocation = {x: target.x + 3 + 3*TANKS, y: target.y - 2 };
   }
 
   const upperX = bp.topRight().x;
-  const lowerY = bp.topLeft().y;
+  const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
 
   generateDefenses(bp, {lowerX, upperX, lowerY, upperY}, {
     TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALLS_ENABLED, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE

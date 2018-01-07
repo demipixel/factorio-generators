@@ -4,10 +4,10 @@ module.exports = function(bp, {x, y}, highY, {LOCOMOTIVES, TRACK_CONCRETE, SINGL
 
   const yPosition = y - LOCOMOTIVES*7;
   const xPosition = x;
-  
+
   const trainStopLocation = { x: xPosition + 2, y: yPosition };
   bp.createEntity('train_stop', trainStopLocation, Blueprint.UP);
-  for (let i = 0; i <= highY - trainStopLocation.y + WALL_SPACE + (WALLS_ENABLED ? WALL_THICKNESS : 0) + 1; i += 2) {
+  for (let i = 0; i <= highY - trainStopLocation.y + WALL_SPACE + (WALLS_ENABLED ? WALL_THICKNESS : 0) + 3; i += 2) {
     bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
     // Concrete
     if (TRACK_CONCRETE) {
@@ -21,8 +21,8 @@ module.exports = function(bp, {x, y}, highY, {LOCOMOTIVES, TRACK_CONCRETE, SINGL
     }
   }
   if (SINGLE_HEADED_TRAIN) {
-    const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
-    for (let i = 2; i < Math.max(0, yPosition - LOWER_Y) + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
+    const LOWER_Y = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y) - 1;
+    for (let i = 2; i < (yPosition - LOWER_Y) + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
       bp.createEntity('straight_rail', { x: xPosition, y: yPosition - i }, Blueprint.DOWN);
       // Concrete
       if (TRACK_CONCRETE) {
