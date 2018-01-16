@@ -289,12 +289,14 @@ module.exports = function(string, opt={}) {
 
   const lowerX = bp.topLeft().x;
   let upperY = bp.bottomLeft().y;
+  let lowerY = Math.min(bp.topLeft().y, INCLUDE_RADAR ? -3 : 0);
 
   let trainStopLocation = null;
 
   if (INCLUDE_TRAIN_STATION) {
     trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
-      LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
+      LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR,
+      lowerY: lowerY
     });
 
     const CONNECT_OFFSET = TANKS % 2 == 0 ? -2 : 0; // Target connects two lower depending on tank directions
@@ -328,7 +330,6 @@ module.exports = function(string, opt={}) {
   }
 
   const upperX = bp.topRight().x;
-  const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
 
   generateDefenses(bp, {lowerX, upperX, lowerY, upperY}, {
     TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE
