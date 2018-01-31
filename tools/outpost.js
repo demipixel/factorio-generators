@@ -82,10 +82,11 @@ module.exports = function(string, opt={}) {
   const WALL_THICKNESS = WALLS_ENABLED ? useOrDefault(opt.wallThickness, 1) : 0;
 
   // Trains
-
+  const LOAD_FROM_BOTH_SIDES = opt.doubleLoading;
   const INCLUDE_TRAIN_STATION = opt.includeTrainStation != undefined ? opt.includeTrainStation : true;
   const LOCOMOTIVES = useOrDefault(opt.locomotiveCount, 2);
-  const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4);
+  const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4) * (LOAD_FROM_BOTH_SIDES ? 2 : 1);
+  const LOADING_BAYS = useOrDefault(opt.cargoWagonCount, 4);
   const SINGLE_HEADED_TRAIN = opt.exitRoute || false;
 
   // Bot info
@@ -315,7 +316,7 @@ module.exports = function(string, opt={}) {
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
       }
 
-      for (let i = 0; i < cutInEarly + Math.max(1, FINAL_LANES - X_SIZE) + (FINAL_LANES <= 2 ? 1 : 0); i++) {
+      for (let i = 0; i < cutInEarly + ((X_SIZE-1)/2); i++) {
         const xPosition = OFFSET_X + MINER_SIZE + acrossDistance + i;
         const yPosition = OFFSET_Y - distanceOut + finalLane - offsetBecauseSplitterOnLast;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT, true);
@@ -334,61 +335,107 @@ module.exports = function(string, opt={}) {
   if (INCLUDE_TRAIN_STATION) {
 	let RAIL_X = null;
 
-    for (let l = 0; l < FINAL_LANES; l++) {
+    for (let l = 0; l < LOADING_BAYS; l++) {
       let OFFSET_Y = locationForBalancer.y + l;
       let OFFSET_X = locationForBalancer.x + (!BOT_BASED ? balancerBlueprint.bottomLeft().y - balancerBlueprint.topLeft().y + 1 : 2);
       const START_TO_CARGO = OFFSET_Y;
 
+      if (l == 0 && LOAD_FROM_BOTH_SIDES && !BOT_BASED) {
+
+        for (let i = 0; i < LOADING_BAYS; i++) {
+          for (let j = 0; j < LOADING_BAYS+1; j++) {
+            bp.createEntity(BELT_NAME+'transport_belt', { x: OFFSET_X+j, y: OFFSET_Y + i + LOADING_BAYS }, Blueprint.RIGHT);
+          }
+          bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X+LOADING_BAYS+1, y: OFFSET_Y + i + LOADING_BAYS}, Blueprint.RIGHT).setDirectionType('input');
+          bp.createEntity(BELT_NAME+'underground_belt', { x: OFFSET_X+LOADING_BAYS+6, y: OFFSET_Y + i + LOADING_BAYS }, Blueprint.RIGHT).setDirectionType('output');
+          bp.createEntity(BELT_NAME+'transport_belt', { x: OFFSET_X+LOADING_BAYS+7, y: OFFSET_Y + i + LOADING_BAYS }, Blueprint.RIGHT);
+        }
+      }
       for (let i = 0; i < l; i++) {
         const xPosition = OFFSET_X + i;
         const yPosition = OFFSET_Y;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
+        if (!BOT_BASED && LOAD_FROM_BOTH_SIDES) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition+8+LOADING_BAYS, y: yPosition + LOADING_BAYS }, Blueprint.RIGHT);
       }
       OFFSET_X += l;
 
-      const distanceToCargoWagon = (FINAL_LANES - l - 1)*6;
+      const distanceToCargoWagon = (LOADING_BAYS - l - 1)*6;
       for (let i = 0; i < distanceToCargoWagon; i++) {
         const xPosition = OFFSET_X;
         const yPosition = OFFSET_Y - i;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
+        
+      }
+      if (!BOT_BASED && LOAD_FROM_BOTH_SIDES)
+      {
+        const distanceToCargoWagon = (l)*8 + 1;
+        for (let i = 0; i < distanceToCargoWagon; i++) {
+          const xPosition = OFFSET_X;
+          const yPosition = OFFSET_Y - i + LOADING_BAYS;
+          bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition + 8+LOADING_BAYS, y: yPosition  }, Blueprint.UP);
+        }
       }
       OFFSET_Y -= distanceToCargoWagon;
-      for (let i = 0; i < FINAL_LANES-l - 1; i++) {
+      for (let i = 0; i < LOADING_BAYS-l - 1; i++) {
         const xPosition = OFFSET_X + i;
         const yPosition = OFFSET_Y;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.RIGHT);
       }
-      OFFSET_X += FINAL_LANES-l - 1;
+
+      if (!BOT_BASED && LOAD_FROM_BOTH_SIDES)
+      {
+        for (let i = 0; i < LOADING_BAYS-l - 1; i++) {
+          const xPosition = OFFSET_X - l + i;
+          const yPosition = OFFSET_Y;
+          bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition +LOADING_BAYS + 9, y: yPosition }, Blueprint.LEFT);
+        }
+
+
+
+      }
+      OFFSET_X += LOADING_BAYS-l - 1;
       for (let i = 0; i < 6; i++) {
         const xPosition = OFFSET_X;
         const yPosition = OFFSET_Y - i;
         if (!BOT_BASED) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition, y: yPosition }, Blueprint.UP);
+        if (!BOT_BASED && LOAD_FROM_BOTH_SIDES) bp.createEntity(BELT_NAME+'transport_belt', { x: xPosition + 9, y: yPosition }, Blueprint.UP);
 
-        if (i == 0 && l == FINAL_LANES-1) {
+        if (i == 0 && l == LOADING_BAYS-1) {
           bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition + 1 });
+          if (LOAD_FROM_BOTH_SIDES) bp.createEntity('medium_electric_pole', { x: xPosition + 6, y: yPosition + 1 });
         } else if (i == 5) {
           bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition - 1 });
+          if (LOAD_FROM_BOTH_SIDES) bp.createEntity('medium_electric_pole', { x: xPosition + 6, y: yPosition - 1 });
         }
         if (!BOT_BASED) bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
+        if (!BOT_BASED && LOAD_FROM_BOTH_SIDES) bp.createEntity('fast_inserter', { x: xPosition + 8, y: yPosition }, Blueprint.RIGHT);
+
         if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
         else bp.createEntity('logistic_chest_requester', { x: xPosition + 2, y: yPosition })
                .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
+        if (LOAD_FROM_BOTH_SIDES) {
+          if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 7, y: yPosition });
+          else bp.createEntity('logistic_chest_requester', { x: xPosition + 7, y: yPosition })
+                 .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
+        }
         bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
+        if (LOAD_FROM_BOTH_SIDES) bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 6, y: yPosition }, Blueprint.RIGHT);
       }
       OFFSET_Y -= 6;
       OFFSET_X += 4;
 
       if (l == 0) {
         RAIL_X = OFFSET_X;
-        trainStopLocation = generateTrainStation(bp, {x: OFFSET_X, y: OFFSET_Y}, START_TO_CARGO + FINAL_LANES, {
+        trainStopLocation = generateTrainStation(bp, {x: OFFSET_X, y: OFFSET_Y}, START_TO_CARGO + LOADING_BAYS * (LOAD_FROM_BOTH_SIDES ? 2 : 1) , {
           LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR
         });
 
         if (ROBOPORTS) {
           for (let i = 0; i < FINAL_LANES*2; i++) {
-            const xPosition = OFFSET_X + 2;
+            const xPosition = OFFSET_X + (LOAD_FROM_BOTH_SIDES ? 4 : 2);
             const yPosition = OFFSET_Y - Math.ceil(FINAL_LANES/2);
             bp.createEntity('roboport', {x: xPosition, y: yPosition + i*4});
+            if (LOAD_FROM_BOTH_SIDES) bp.createEntity('roboport', {x: xPosition + 4, y: yPosition + i*4});
           }
         }
       }
@@ -407,10 +454,10 @@ module.exports = function(string, opt={}) {
   // Place walls and laser turrets
 
   const lowerX = -2;
-  const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0);
+  const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
 
   const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
-  const upperY = Y_LENGTH*Y_SIZE + Math.max(FINAL_LANES, X_LENGTH);
+  const upperY = Y_LENGTH*Y_SIZE + Math.max(LOADING_BAYS, X_LENGTH) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
 
   generateDefenses(bp, {lowerX, upperX, lowerY, upperY}, {
     TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE
