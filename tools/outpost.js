@@ -70,6 +70,7 @@ module.exports = function(string, opt={}) {
   const MINING_DRILL_NAME = opt.miningDrillName || 'electric_mining_drill';
   const MODULE = opt.module;
   const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
+  const USE_FILTER_INSERTER = opt.useFilterInserters != undefined ? !!opt.useFilterInserters : true;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
 
   // Defenses
@@ -394,6 +395,7 @@ module.exports = function(string, opt={}) {
 
       }
       OFFSET_X += LOADING_BAYS-l - 1;
+      const inserterType = USE_STACKER_INSERTER ? (USE_FILTER_INSERTER ? 'stack_filter_inserter' : 'stack_inserter') : (USE_FILTER_INSERTER ? 'filter_inserter' : 'fast_inserter');
       for (let i = 0; i < 6; i++) {
         const xPosition = OFFSET_X;
         const yPosition = OFFSET_Y - i;
@@ -418,8 +420,8 @@ module.exports = function(string, opt={}) {
           else bp.createEntity('logistic_chest_requester', { x: xPosition + 7, y: yPosition })
                  .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
         }
-        bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
-        if (LOAD_FROM_BOTH_SIDES) bp.createEntity(USE_STACKER_INSERTER ? 'stack_inserter' : 'fast_inserter', { x: xPosition + 6, y: yPosition }, Blueprint.RIGHT);
+        bp.createEntity(inserterType, { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
+        if (LOAD_FROM_BOTH_SIDES) bp.createEntity(inserterType, { x: xPosition + 6, y: yPosition }, Blueprint.RIGHT);
       }
       OFFSET_Y -= 6;
       OFFSET_X += 4;
