@@ -6,17 +6,17 @@ const aStar = require('a-star');
 const Victor = require('victor');
 
 const PUMPJACK_EXIT_DIRECTION = {
-  0: {x: 2, y: -1},
-  2: {x: 3, y: 0},
-  4: {x: 0, y: 3},
-  6: {x: -1, y: 2}
+  0: { x: 2, y: -1 },
+  2: { x: 3, y: 0 },
+  4: { x: 0, y: 3 },
+  6: { x: -1, y: 2 }
 };
 
 const SIDES = [
-  {x: 1, y: 0},
-  {x: -1, y: 0},
-  {x: 0, y: 1},
-  {x: 0, y: -1}
+  { x: 1, y: 0 },
+  { x: -1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 0, y: -1 }
 ];
 
 const DIRECTION_FROM_OFFSET = {
@@ -32,7 +32,7 @@ function useOrDefault(value, def) {
 
 const MAX_UNDERGROUND_REACH = 11; // Includes underground pipes
 
-module.exports = function(string, opt={}) {
+module.exports = function(string, opt = {}) {
   if (!string) throw new Error('You must provide a blueprint string with pumpjacks!');
 
   const NAME = opt.name || 'Oil Outpost - %pumpjacks% Pumpjacks';
@@ -87,7 +87,8 @@ module.exports = function(string, opt={}) {
     const ROTATE_OFFSET = ((4 - ROTATE_ALL) % 4);
     const ORDER = [0, -1, 2, 3];
     if (pumpjack.direction % 4 == 0) ORDER.reverse();
-    let offset = {x: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction + ROTATE_ALL*2) % 8].x, y: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction + ROTATE_ALL*2) % 8].y};
+    let offset = { x: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction + ROTATE_ALL * 2) % 8].x, y: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction +
+        ROTATE_ALL * 2) % 8].y };
     offset.x = ORDER[(ORDER.indexOf(offset.x) + ROTATE_OFFSET) % ORDER.length];
     offset.y = ORDER[(ORDER.indexOf(offset.y) + ROTATE_OFFSET) % ORDER.length];
     if (FLIP_ALL) offset.x = 2 - offset.x;
@@ -98,7 +99,7 @@ module.exports = function(string, opt={}) {
   const templateBp = new Blueprint(string);
   let bp = new Blueprint();
 
-  bp.placeBlueprint(templateBp, {x: 0, y: 0}, (4 - ROTATE_ALL) % 4);
+  bp.placeBlueprint(templateBp, { x: 0, y: 0 }, (4 - ROTATE_ALL) % 4);
 
   if (FLIP_ALL) {
     bp.entities.forEach(e => {
@@ -116,7 +117,7 @@ module.exports = function(string, opt={}) {
 
   bp = new Blueprint(bp.toObject());
 
-  bp.fixCenter({x: 0.5, y: 0.5}); // Tracks in a blueprint always offsets everything by 0.5, so let's keep it clean
+  bp.fixCenter({ x: 0.5, y: 0.5 }); // Tracks in a blueprint always offsets everything by 0.5, so let's keep it clean
 
   const alignmentTracks = bp.entities.filter(ent => ent.name == 'straight_rail');
 
@@ -129,8 +130,8 @@ module.exports = function(string, opt={}) {
 
   alignmentTracks[0].remove();
 
-  if (alignment.x < 0) alignment.x += Math.ceil(-alignment.x/2)*2;
-  if (alignment.y < 0) alignment.y += Math.ceil(-alignment.y/2)*2;
+  if (alignment.x < 0) alignment.x += Math.ceil(-alignment.x / 2) * 2;
+  if (alignment.y < 0) alignment.y += Math.ceil(-alignment.y / 2) * 2;
   alignment.x %= 2;
   alignment.y %= 2;
 
@@ -144,9 +145,7 @@ module.exports = function(string, opt={}) {
     }
   });
 
-  // return bp.encode();
-
-  let target = new Victor(bp.topRight().x + 1, (bp.topRight().y + bp.bottomRight().y)/2);
+  let target = new Victor(bp.topRight().x + 1, (bp.topRight().y + bp.bottomRight().y) / 2);
 
   target.x += -(target.x % 2) + alignment.x
   target.y += -(target.y % 2) + alignment.y;
@@ -156,9 +155,9 @@ module.exports = function(string, opt={}) {
     bp.entities.filter(ent => ent.name == 'medium_electric_pole').forEach(pole => {
       if (powered) return;
       if ((pole.position.x - pumpjack.position.x <= 5) &&
-          (pole.position.y - pumpjack.position.y <= 5) &&
-          (pumpjack.position.x - pole.position.x <= 3) &&
-          (pumpjack.position.y - pole.position.y <= 3)) {
+        (pole.position.y - pumpjack.position.y <= 5) &&
+        (pumpjack.position.x - pole.position.x <= 3) &&
+        (pumpjack.position.y - pole.position.y <= 3)) {
         powered = true;
       }
     });
@@ -169,7 +168,7 @@ module.exports = function(string, opt={}) {
     for (let x = -1; x <= 3; x++) {
       for (let y = -1; y <= 3; y++) {
         if (x != -1 && x != 3 && y != -1 && y != 3) continue; // Only on edges
-        const pos = {x: x + pumpjack.position.x, y: y + pumpjack.position.y}
+        const pos = { x: x + pumpjack.position.x, y: y + pumpjack.position.y }
         if (pos.x == output.x && pos.y == output.y) continue;
         if (x == output.x || y == output.y) electricPoleLocations.push(pos);
         else electricPoleLocations.unshift(pos);
@@ -178,16 +177,16 @@ module.exports = function(string, opt={}) {
     for (let i = 0; i < electricPoleLocations.length; i++) {
       const x = electricPoleLocations[i].x;
       const y = electricPoleLocations[i].y;
-      if (bp.findEntity({x, y})) continue;
+      if (bp.findEntity({ x, y })) continue;
       let blocking = false;
       SIDES.forEach(side => {
-        const ent = bp.findEntity({x: x + side.x, y: y + side.y});
+        const ent = bp.findEntity({ x: x + side.x, y: y + side.y });
         if (!ent || ent.name != 'pumpjack') return;
         const otherOutput = getPumpjackOutput(ent);
         if (otherOutput.x == x && otherOutput.y == y) blocking = true;
       });
       if (!blocking) {
-        bp.createEntity('medium_electric_pole', {x, y});
+        bp.createEntity('medium_electric_pole', { x, y });
         break;
       }
     }
@@ -210,11 +209,11 @@ module.exports = function(string, opt={}) {
       },
       neighbor: (node) => {
         return SIDES.map(side => node.clone().add(side))
-                    .filter(pos => !bp.findEntity(pos))
-                    .filter(pos => pos.x <= target.x);
+          .filter(pos => !bp.findEntity(pos))
+          .filter(pos => pos.x <= target.x);
       },
       distance: (nodeA, nodeB) => {
-        return Math.abs(nodeA.x - nodeB.x)*0.98 + Math.abs(nodeA.y - nodeB.y);
+        return Math.abs(nodeA.x - nodeB.x) * 0.98 + Math.abs(nodeA.y - nodeB.y);
       },
       heuristic: (node) => {
         return 0; //Math.abs(node.x - target.x) + Math.abs(node.y - target.y);
@@ -233,7 +232,7 @@ module.exports = function(string, opt={}) {
     });
   });
 
-  function simplifyPipes(bp, start, minLength=3) {
+  function simplifyPipes(bp, start, minLength = 3) {
     const checked = {};
     const stack = [start];
 
@@ -242,20 +241,21 @@ module.exports = function(string, opt={}) {
     while (stack.length > 0) {
       const pos = stack.pop();
       const entity = bp.findEntity(pos);
-      if (checked[pos.x+','+pos.y] || !entity || entity.name != 'pipe') continue;
-      checked[pos.x+','+pos.y] = true;
+      if (checked[pos.x + ',' + pos.y] || !entity || entity.name != 'pipe') continue;
+      checked[pos.x + ',' + pos.y] = true;
 
       const sidePipes = SIDES.map(side => bp.findEntity(pos.clone().add(side)))
-                             .filter(ent => !!ent)
-                             .filter(ent => ent.name == 'pipe' || (ent.name == 'pumpjack' && (getPumpjackOutput(ent).x == pos.x && getPumpjackOutput(ent).y == pos.y)))
-                             .map(ent => ent.position);
+        .filter(ent => !!ent)
+        .filter(ent => ent.name == 'pipe' || (ent.name == 'pumpjack' && (getPumpjackOutput(ent).x == pos.x && getPumpjackOutput(ent).y == pos.y)))
+        .map(ent => ent.position);
 
       if (pos.from) {
-        let shouldUnderground = sidePipes.length == 2 && (sidePipes[0].x - pos.x == pos.x - sidePipes[1].x) && (sidePipes[0].y - pos.y == pos.y - sidePipes[1].y)
+        let shouldUnderground = sidePipes.length == 2 && (sidePipes[0].x - pos.x == pos.x - sidePipes[1].x) && (sidePipes[0].y - pos.y == pos.y -
+          sidePipes[1].y)
 
         const offsetX = pos.from.x - pos.x;
         const offsetY = pos.from.y - pos.y;
-        const direction = DIRECTION_FROM_OFFSET[offsetX+','+offsetY];
+        const direction = DIRECTION_FROM_OFFSET[offsetX + ',' + offsetY];
 
         if (pos.from.underground && pos.from.underground.length != MAX_UNDERGROUND_REACH && shouldUnderground) {
           pos.from.underground.push(pos);
@@ -294,8 +294,14 @@ module.exports = function(string, opt={}) {
   let trainStopLocation = null;
 
   if (INCLUDE_TRAIN_STATION) {
-    trainStopLocation = generateTrainStation(bp, {x: target.x + 3 + 3*TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 - WAGONS*7), {
-      LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR,
+    trainStopLocation = generateTrainStation(bp, { x: target.x + 3 + 3 * TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 -
+      WAGONS * 7), {
+      LOCOMOTIVES,
+      TRACK_CONCRETE,
+      SINGLE_HEADED_TRAIN,
+      WALL_SPACE,
+      WALL_THICKNESS,
+      INCLUDE_RADAR,
       lowerY: lowerY
     });
 
@@ -303,36 +309,42 @@ module.exports = function(string, opt={}) {
 
     for (let i = 0; i < WAGONS; i++) {
       for (let j = 0; j < TANKS; j++) {
-        const pos = {x: target.x + 1 + j*3, y: target.y + CONNECT_OFFSET + i*7};
+        const pos = { x: target.x + 1 + j * 3, y: target.y + CONNECT_OFFSET + i * 7 };
         bp.createEntity('storage_tank', pos, ((TANKS - j) % 2 == 0) ^ FLIP_ALL ? 2 : 0, true);
         upperY = Math.max(upperY, pos.y + 3); // +3 for size of storage_tank
         if (i == 0 && j == TANKS - 1) {
-          bp.createEntity('radar', {x: pos.x, y: pos.y - 3});
-          bp.createEntity('medium_electric_pole', {x: pos.x - 1, y: pos.y - 1});
+          bp.createEntity('radar', { x: pos.x, y: pos.y - 3 });
+          bp.createEntity('medium_electric_pole', { x: pos.x - 1, y: pos.y - 1 });
         }
       }
     }
 
     for (let i = 0; i < WAGONS; i++) {
-      bp.createEntity('pump', {x: target.x + 1 + 3*TANKS, y: target.y + CONNECT_OFFSET + 2 + i*7}, 2);
-      bp.createEntity('medium_electric_pole', {x: target.x + 1 + 3*TANKS, y: target.y + CONNECT_OFFSET + 2 + i*7 + 1});
+      bp.createEntity('pump', { x: target.x + 1 + 3 * TANKS, y: target.y + CONNECT_OFFSET + 2 + i * 7 }, 2);
+      bp.createEntity('medium_electric_pole', { x: target.x + 1 + 3 * TANKS, y: target.y + CONNECT_OFFSET + 2 + i * 7 + 1 });
     }
 
     for (let i = 1; i < WAGONS; i++) {
-      bp.createEntity('pipe_to_ground', {x: target.x + 3*TANKS, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7}, 0);
-      bp.createEntity('pipe_to_ground', {x: target.x + 3*TANKS, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7 + 2}, 4);
+      bp.createEntity('pipe_to_ground', { x: target.x + 3 * TANKS, y: target.y + CONNECT_OFFSET + 3 + (i - 1) * 7 }, 0);
+      bp.createEntity('pipe_to_ground', { x: target.x + 3 * TANKS, y: target.y + CONNECT_OFFSET + 3 + (i - 1) * 7 + 2 }, 4);
       for (let j = 0; j < 3; j++) {
-        bp.createEntity('pipe', {x: target.x + 3*TANKS - j, y: target.y + CONNECT_OFFSET + 3 + (i-1)*7 + 3});
+        bp.createEntity('pipe', { x: target.x + 3 * TANKS - j, y: target.y + CONNECT_OFFSET + 3 + (i - 1) * 7 + 3 });
       }
     }
   } else {
-    trainStopLocation = {x: target.x + 3 + 3*TANKS, y: target.y - 2 };
+    trainStopLocation = { x: target.x + 3 + 3 * TANKS, y: target.y - 2 };
   }
 
   const upperX = bp.topRight().x;
 
-  generateDefenses(bp, {lowerX, upperX, lowerY, upperY}, {
-    TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE
+  generateDefenses(bp, { lowerX, upperX, lowerY, upperY }, {
+    TURRETS_ENABLED,
+    TURRET_SPACING,
+    USE_LASER_TURRETS,
+    WALL_SPACE,
+    WALL_THICKNESS,
+    CONCRETE,
+    BORDER_CONCRETE
   });
 
   if (MODULE) {
@@ -366,7 +378,7 @@ module.exports = function(string, opt={}) {
 
   const finalBp = new Blueprint();
 
-  finalBp.placeBlueprint(bp, {x: 0, y: 0}, ROTATE_ALL);
+  finalBp.placeBlueprint(bp, { x: 0, y: 0 }, ROTATE_ALL);
   finalBp.name = NAME.replace('%pumpjacks%', finalBp.entities.filter(e => e.name == 'pumpjack').length);
 
   return finalBp.encode();

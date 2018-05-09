@@ -1,8 +1,8 @@
 const Blueprint = require('factorio-blueprint');
 
-module.exports = function(bp, {x, y}, highY, {lowerY, LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR}) {
+module.exports = function(bp, { x, y }, highY, { lowerY, LOCOMOTIVES, TRACK_CONCRETE, SINGLE_HEADED_TRAIN, WALL_SPACE, WALL_THICKNESS, INCLUDE_RADAR }) {
 
-  const yPosition = y - LOCOMOTIVES*7;
+  const yPosition = y - LOCOMOTIVES * 7;
   const xPosition = x;
 
   const trainStopLocation = { x: xPosition + 2, y: yPosition };

@@ -15,8 +15,8 @@ module.exports = function(string, opt) {
 
   // is book?
   const isBook = Blueprint.isBook(string);
-  if(isBook){
-      blueprints = Blueprint.getBook(string,{ checkWithEntityData: false });
+  if (isBook) {
+    blueprints = Blueprint.getBook(string, { checkWithEntityData: false });
   }
   for (let blueprintIndex in blueprints) {
     let old = blueprints[blueprintIndex];
@@ -33,7 +33,8 @@ module.exports = function(string, opt) {
     [ENTITY_REPLACE, RECIPE_REPLACE, MODULE_REPLACE].forEach(replaceType => {
       replaceType.forEach(replace => {
         ['to', 'from', 'includes'].forEach(type => {
-          if (replace[type] && !Blueprint.getEntityData()[bp.jsName(replace[type].replace('includes:', ''))]) newEntityData[bp.jsName(replace[type].replace('includes:', ''))] = { type: 'item' };
+          if (replace[type] && !Blueprint.getEntityData()[bp.jsName(replace[type].replace('includes:', ''))]) newEntityData[bp.jsName(
+            replace[type].replace('includes:', ''))] = { type: 'item' };
         });
       });
     });
@@ -131,8 +132,8 @@ module.exports = function(string, opt) {
           return;
         }*/
         e.position.x = -e.position.x - e.size.x;
-        if (e.name == 'curved_rail' && CURVED_MAP[e.direction] !== undefined ) e.direction = CURVED_MAP[e.direction];
-        else if (e.name != 'curved_rail' && MAP[e.direction] !== undefined ) e.direction = MAP[e.direction];
+        if (e.name == 'curved_rail' && CURVED_MAP[e.direction] !== undefined) e.direction = CURVED_MAP[e.direction];
+        else if (e.name != 'curved_rail' && MAP[e.direction] !== undefined) e.direction = MAP[e.direction];
       });
       bp.tiles.forEach(e => {
         e.position.x = -e.position.x - 1;
@@ -170,8 +171,8 @@ module.exports = function(string, opt) {
           return;
         }*/
         e.position.y = -e.position.y - e.size.y;
-        if (e.name == 'curved_rail' && CURVED_MAP[e.direction] !== undefined ) e.direction = CURVED_MAP[e.direction];
-        else if (e.name != 'curved_rail' && MAP[e.direction] !== undefined ) e.direction = MAP[e.direction];
+        if (e.name == 'curved_rail' && CURVED_MAP[e.direction] !== undefined) e.direction = CURVED_MAP[e.direction];
+        else if (e.name != 'curved_rail' && MAP[e.direction] !== undefined) e.direction = MAP[e.direction];
       });
       bp.tiles.forEach(e => {
         e.position.y = -e.position.y - 1;
@@ -179,9 +180,9 @@ module.exports = function(string, opt) {
       bp.fixCenter({ x: 0, y: 1 }); // In case of tracks
     }
   }
-  if(isBook){
+  if (isBook) {
     return Blueprint.toBook(newBP);
-  }else{
+  } else {
     return newBP[0].encode();
   }
 }

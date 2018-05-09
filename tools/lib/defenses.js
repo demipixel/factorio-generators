@@ -1,15 +1,16 @@
 const Blueprint = require('factorio-blueprint');
 
-module.exports = function(bp, {lowerX, upperX, lowerY, upperY}, {TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS, CONCRETE, BORDER_CONCRETE}) {
+module.exports = function(bp, { lowerX, upperX, lowerY, upperY }, { TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS,
+  CONCRETE, BORDER_CONCRETE }) {
 
   function generateTurret(isX, variable, upper, placePowerpole) {
     const sign = upper ? 1 : -1;
     const yPosition = isX ?
-                        ((upper ? upperY : lowerY - 1) + WALL_SPACE*sign - 3*sign) :
-                        variable;
+      ((upper ? upperY : lowerY - 1) + WALL_SPACE * sign - 3 * sign) :
+      variable;
     const xPosition = isX ?
-                        (variable) :
-                        (upper ? upperX : lowerX - 1) + WALL_SPACE*sign - 3*sign;
+      (variable) :
+      (upper ? upperX : lowerX - 1) + WALL_SPACE * sign - 3 * sign;
 
     let dir = isX ? (upper ? Blueprint.DOWN : Blueprint.UP) : (upper ? Blueprint.RIGHT : Blueprint.LEFT);
 
@@ -54,22 +55,28 @@ module.exports = function(bp, {lowerX, upperX, lowerY, upperY}, {TURRETS_ENABLED
       for (let x = lowerX - WALL_SPACE - i; x <= upperX + WALL_SPACE + i; x++) {
         const ent1 = bp.findEntity({ x: x, y: lowerY - WALL_SPACE - i });
         const ent2 = bp.findEntity({ x: x, y: upperY + WALL_SPACE + i });
-        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: x, y: lowerY - WALL_SPACE - i }, Blueprint.RIGHT, true);
-        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: x, y: upperY + WALL_SPACE + i }, Blueprint.RIGHT, true);
+        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: x, y: lowerY - WALL_SPACE - i }, Blueprint.RIGHT,
+          true);
+        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: x, y: upperY + WALL_SPACE + i }, Blueprint.RIGHT,
+          true);
       }
       for (let y = lowerY - WALL_SPACE - i; y <= upperY + WALL_SPACE + i; y++) {
         const ent1 = bp.findEntity({ x: lowerX - WALL_SPACE - i, y: y });
         const ent2 = bp.findEntity({ x: upperX + WALL_SPACE + i, y: y });
-        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: lowerX - WALL_SPACE - i, y: y }, Blueprint.DOWN, true);
-        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: upperX + WALL_SPACE + i, y: y }, Blueprint.DOWN, true);
+        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: lowerX - WALL_SPACE - i, y: y }, Blueprint.DOWN,
+          true);
+        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: upperX + WALL_SPACE + i, y: y }, Blueprint.DOWN,
+          true);
       }
     }
   }
 
   for (let y = lowerY - WALL_SPACE - WALL_THICKNESS + 1; y <= upperY + WALL_SPACE + WALL_THICKNESS - 1; y++) {
     for (let x = lowerX - WALL_SPACE - WALL_THICKNESS + 1; x <= upperX + WALL_SPACE + WALL_THICKNESS - 1; x++) {
-      if (BORDER_CONCRETE && (y - lowerY + WALL_SPACE + WALL_THICKNESS <= WALL_THICKNESS + 1 || upperY + WALL_SPACE + WALL_THICKNESS - y <= WALL_THICKNESS + 1 || x - lowerX + WALL_SPACE + WALL_THICKNESS <= WALL_THICKNESS + 1 || upperX + WALL_SPACE + WALL_THICKNESS - x <= WALL_THICKNESS + 1)) {
-        bp.createTile(BORDER_CONCRETE, { x: x, y: y});
+      if (BORDER_CONCRETE && (y - lowerY + WALL_SPACE + WALL_THICKNESS <= WALL_THICKNESS + 1 || upperY + WALL_SPACE + WALL_THICKNESS - y <=
+          WALL_THICKNESS + 1 || x - lowerX + WALL_SPACE + WALL_THICKNESS <= WALL_THICKNESS + 1 || upperX + WALL_SPACE + WALL_THICKNESS - x <=
+          WALL_THICKNESS + 1)) {
+        bp.createTile(BORDER_CONCRETE, { x: x, y: y });
       } else if (CONCRETE && !bp.findTile({ x: x, y: y })) {
         bp.createTile(CONCRETE, { x: x, y: y });
       }
