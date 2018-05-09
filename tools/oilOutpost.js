@@ -1,9 +1,11 @@
 const Blueprint = require('factorio-blueprint');
+const aStar = require('a-star');
+const Victor = require('victor');
+
 const generateDefenses = require('./lib/defenses');
 const generateTrainStation = require('./lib/trainStation');
 const fixRail = require('./lib/fixRail');
-const aStar = require('a-star');
-const Victor = require('victor');
+const addBeacons = require('./lib/addBeacons');
 
 const PUMPJACK_EXIT_DIRECTION = {
   0: { x: 2, y: -1 },
@@ -50,6 +52,7 @@ module.exports = function(string, opt = {}) {
   const MODULE = opt.module;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
   const TANKS = useOrDefault(opt.tanks, 2);
+  const USE_BEACONS = !!opt.beacons;
 
   // Defenses
   const TURRETS_ENABLED = opt.turrets != undefined ? opt.turrets : true;
@@ -87,8 +90,11 @@ module.exports = function(string, opt = {}) {
     const ROTATE_OFFSET = ((4 - ROTATE_ALL) % 4);
     const ORDER = [0, -1, 2, 3];
     if (pumpjack.direction % 4 == 0) ORDER.reverse();
-    let offset = { x: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction + ROTATE_ALL * 2) % 8].x, y: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction +
-        ROTATE_ALL * 2) % 8].y };
+    let offset = {
+      x: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction + ROTATE_ALL * 2) % 8].x,
+      y: PUMPJACK_EXIT_DIRECTION[(pumpjack.direction +
+        ROTATE_ALL * 2) % 8].y
+    };
     offset.x = ORDER[(ORDER.indexOf(offset.x) + ROTATE_OFFSET) % ORDER.length];
     offset.y = ORDER[(ORDER.indexOf(offset.y) + ROTATE_OFFSET) % ORDER.length];
     if (FLIP_ALL) offset.x = 2 - offset.x;
@@ -141,9 +147,10 @@ module.exports = function(string, opt = {}) {
     if (ent.name != 'pumpjack') throw new Error('The blueprint must only contain pumpjacks and one track!');
     else if (bp.findEntity(getPumpjackOutput(ent))) {
       throw new Error('A pumpjack is facing into another pumpjack!');
-      // bp.createEntity('pipe', getPumpjackOutput(ent), 0, true)
     }
   });
+
+  if (USE_BEACONS) addBeacons(bp);
 
   let target = new Victor(bp.topRight().x + 1, (bp.topRight().y + bp.bottomRight().y) / 2);
 
@@ -209,11 +216,19 @@ module.exports = function(string, opt = {}) {
       },
       neighbor: (node) => {
         return SIDES.map(side => node.clone().add(side))
-          .filter(pos => !bp.findEntity(pos))
+          .filter(pos => !bp.findEntity(pos) || bp.findEntity(pos).name == 'beacon')
           .filter(pos => pos.x <= target.x);
       },
       distance: (nodeA, nodeB) => {
-        return Math.abs(nodeA.x - nodeB.x) * 0.98 + Math.abs(nodeA.y - nodeB.y);
+        let scale = 1.0;
+        if (USE_BEACONS) {
+          const entityA = bp.findEntity(nodeA);
+          const entityB = bp.findEntity(nodeB);
+          if ((entityA && entityA.name == 'beacon') || (entityB && entityB.name == 'beacon')) {
+            scale = 100;
+          }
+        }
+        return (Math.abs(nodeA.x - nodeB.x) * 0.98 + Math.abs(nodeA.y - nodeB.y)) * scale;
       },
       heuristic: (node) => {
         return 0; //Math.abs(node.x - target.x) + Math.abs(node.y - target.y);
@@ -228,6 +243,7 @@ module.exports = function(string, opt = {}) {
       else throw new Error('Took too long to generate pipe paths!');
     }
     result.path.forEach(pos => {
+      if (bp.findEntity(pos)) bp.findEntity(pos).remove();
       bp.createEntity('pipe', pos, 0, true);
     });
   });
