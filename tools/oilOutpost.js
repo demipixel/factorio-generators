@@ -150,7 +150,7 @@ module.exports = function(string, opt = {}) {
     }
   });
 
-  if (USE_BEACONS) addBeacons(bp);
+  if (USE_BEACONS) addBeacons(bp, getPumpjackOutput);
 
   let target = new Victor(bp.topRight().x + 1, (bp.topRight().y + bp.bottomRight().y) / 2);
 

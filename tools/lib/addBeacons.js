@@ -222,10 +222,10 @@ function shouldPlaceBeacon(bp, posX, posY) {
   return reach && runNN(input) >= 0.5;
 }
 
-function placeBeacons(bp) {
+function placeBeacons(bp, getPumpjackOutput) {
   const tempPipes = [];
   bp.entities.filter(ent => ent.name == 'pumpjack').forEach(pumpjack => {
-    tempPipes.push(bp.createEntity('pipe', pumpjack.position.clone().add(PUMPJACK_EXIT_DIRECTION[pumpjack.direction / 2])));
+    tempPipes.push(bp.createEntity('pipe', getPumpjackOutput(pumpjack)));
   });
 
   const start = bp.topLeft().subtract({ x: 5, y: 5 });
