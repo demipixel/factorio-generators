@@ -1,7 +1,7 @@
 const Blueprint = require('factorio-blueprint');
 
 module.exports = function(bp, { lowerX, upperX, lowerY, upperY }, { TURRETS_ENABLED, TURRET_SPACING, USE_LASER_TURRETS, WALL_SPACE, WALL_THICKNESS,
-  CONCRETE, BORDER_CONCRETE }) {
+  CONCRETE, BORDER_CONCRETE, INCLUDE_LIGHTS }) {
 
   function generateTurret(isX, variable, upper, placePowerpole) {
     const sign = upper ? 1 : -1;
@@ -24,10 +24,20 @@ module.exports = function(bp, { lowerX, upperX, lowerY, upperY }, { TURRETS_ENAB
         const OFFSET_Y = isX ? movePowerpoleBehind : -1;
         const OFFSET_X = isX ? -1 : movePowerpoleBehind;
         bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
+        if(INCLUDE_LIGHTS){
+          const LX = OFFSET_X + (isX ? 0 : 1);
+          const LY = OFFSET_Y + (isX ? 1 : 0);
+          bp.createEntity('small_lamp', { x: xPosition + LX, y: yPosition + LY });
+        }
       } catch (e) {
         const OFFSET_Y = isX ? movePowerpoleBehind : 2;
         const OFFSET_X = isX ? 2 : movePowerpoleBehind;
         bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
+        if(INCLUDE_LIGHTS){
+          const LX = OFFSET_X + (isX ? 0 : 1);
+          const LY = OFFSET_Y + (isX ? 1 : 0);
+          bp.createEntity('small_lamp', { x: xPosition + LX, y: yPosition + LY });
+        }
       }
     }
   }
@@ -52,21 +62,66 @@ module.exports = function(bp, { lowerX, upperX, lowerY, upperY }, { TURRETS_ENAB
 
   if (WALL_THICKNESS > 0) {
     for (let i = 0; i < WALL_THICKNESS; i++) {
+      var placedLowerGateLast = false;
+      var placedUpperGateLast = false;
       for (let x = lowerX - WALL_SPACE - i; x <= upperX + WALL_SPACE + i; x++) {
         const ent1 = bp.findEntity({ x: x, y: lowerY - WALL_SPACE - i });
         const ent2 = bp.findEntity({ x: x, y: upperY + WALL_SPACE + i });
-        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: x, y: lowerY - WALL_SPACE - i }, Blueprint.RIGHT,
-          true);
-        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: x, y: upperY + WALL_SPACE + i }, Blueprint.RIGHT,
-          true);
+        if (!ent1 || ent1.name == 'straight_rail')
+        { 
+          bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: x, y: lowerY - WALL_SPACE - i }, Blueprint.RIGHT, true);
+          if(!ent1){
+            if(placedLowerGateLast)
+              bp.createEntity('small_lamp', { x: x, y: lowerY - WALL_SPACE - i - 1 }, Blueprint.RIGHT, true);
+              placedLowerGateLast = false;
+          }else{
+            if(!placedLowerGateLast)
+              bp.createEntity('small_lamp', { x: x - 1, y: lowerY - WALL_SPACE - i - 1 }, Blueprint.RIGHT, true);
+              placedLowerGateLast = true;
+          }
+        }
+        if (!ent2 || ent2.name == 'straight_rail') {
+          bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: x, y: upperY + WALL_SPACE + i }, Blueprint.RIGHT, true);
+          if(!ent2){
+            if(placedUpperGateLast)
+              bp.createEntity('small_lamp', { x: x, y: upperY + WALL_SPACE + i + 1 }, Blueprint.RIGHT, true);
+              placedUpperGateLast = false;
+          }else{
+            if(!placedUpperGateLast)
+              bp.createEntity('small_lamp', { x: x - 1, y: upperY + WALL_SPACE + i + 1 }, Blueprint.RIGHT, true);
+            placedUpperGateLast = true;
+          }
+        }
       }
+      placedLowerGateLast = false;
+      placedUpperGateLast = false;
       for (let y = lowerY - WALL_SPACE - i; y <= upperY + WALL_SPACE + i; y++) {
         const ent1 = bp.findEntity({ x: lowerX - WALL_SPACE - i, y: y });
         const ent2 = bp.findEntity({ x: upperX + WALL_SPACE + i, y: y });
-        if (!ent1 || ent1.name == 'straight_rail') bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: lowerX - WALL_SPACE - i, y: y }, Blueprint.DOWN,
-          true);
-        if (!ent2 || ent2.name == 'straight_rail') bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: upperX + WALL_SPACE + i, y: y }, Blueprint.DOWN,
-          true);
+        if (!ent1 || ent1.name == 'straight_rail') {
+          bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: lowerX - WALL_SPACE - i, y: y }, Blueprint.DOWN, true);
+          if(!ent1){
+            if(placedLowerGateLast)
+              bp.createEntity('small_lamp', { x: lowerX - WALL_SPACE - i - 1, y: y }, Blueprint.RIGHT, true);
+              placedLowerGateLast = false;
+          }else{
+            if(!placedLowerGateLast)
+              bp.createEntity('small_lamp', { x: lowerX - WALL_SPACE - i - 1, y: y - 1 }, Blueprint.RIGHT, true);
+              placedLowerGateLast = true;
+          }
+        }
+        if (!ent2 || ent2.name == 'straight_rail') {
+          bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: upperX + WALL_SPACE + i, y: y }, Blueprint.DOWN, true);
+          if(!ent2){
+            if(placedUpperGateLast)
+              bp.createEntity('small_lamp', { x: upperX + WALL_SPACE + i + 1, y: y }, Blueprint.RIGHT, true);
+              placedUpperGateLast = false;
+          }else{
+            if(!placedUpperGateLast)
+              bp.createEntity('small_lamp', { x: upperX + WALL_SPACE + i + 1, y: y - 1 }, Blueprint.RIGHT, true);
+            placedUpperGateLast = true;
+          }
+        }
       }
     }
   }

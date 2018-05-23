@@ -27,34 +27,34 @@ function useOrDefault(value, def) {
 }
 
 function isUpwardsFacingBelt(ent) {
-  const names = ['transport_belt', 'splitter', 'underground_belt'];
-  let nameOk = false;
-  names.forEach(function(name) {
-    if (ent.name.indexOf(name) > -1) {
-      nameOk = true;
-    }
-  });
+	const names = ['transport_belt', 'splitter', 'underground_belt'];
+	let nameOk = false;
+	names.forEach(function(name) {
+		if (ent.name.indexOf(name) > -1) {
+			nameOk = true;
+		}
+	});
 
-  return nameOk && ent.direction == Blueprint.UP && (!ent.directionType || ent.directionType == 'input');
+	return nameOk && ent.direction == Blueprint.UP && (!ent.directionType || ent.directionType == 'input');
 }
 
 //places medium poles along x axis in between given posistions to connect medium poles at (x1, y) and (x2, y)
 function connectPoles_x(bp, x1, x2, y) {
-  const POLE_REACH = 8;
-  const d = Math.abs(x1 - x2);
-  const xmin = Math.min(x1, x2);
-  const xmax = Math.max(x1, x2);
-  if (d <= POLE_REACH)
-    return;
+	const POLE_REACH = 8;
+	const d = Math.abs(x1 - x2);
+	const xmin = Math.min(x1, x2);
+	const xmax = Math.max(x1, x2);
+	if (d <= POLE_REACH)
+		return;
 
-  //try to place a pole as far from xmax as possible
-  for (let i = xmax - POLE_REACH; i <= xmax - 1; i++) {
-    const pos = { x: i, y: y };
-    if (bp.findEntity(pos) == null) {
-      bp.createEntity('medium_electric_pole', pos);
-      return connectPoles_x(bp, xmin, i, y);
-    }
-  }
+	//try to place a pole as far from xmax as possible
+	for (let i = xmax - POLE_REACH; i <= xmax - 1; i++) {
+		const pos = { x: i, y: y };
+		if (bp.findEntity(pos) == null) {
+			bp.createEntity('medium_electric_pole', pos);
+			return connectPoles_x(bp, xmin, i, y);
+		}
+	}
 }
 
 
@@ -73,6 +73,7 @@ module.exports = function(string, opt = {}) {
   const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
   const USE_FILTER_INSERTER = opt.useFilterInserters != undefined ? !!opt.useFilterInserters : true;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
+  const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : true;
 
   // Defenses
   const TURRETS_ENABLED = opt.turrets != undefined ? opt.turrets : true;
@@ -183,13 +184,13 @@ module.exports = function(string, opt = {}) {
       else if (ent.name.includes('splitter')) ent.name = BELT_NAME + 'splitter';
     });
 
-    const balancerBL = balancerBlueprint.bottomLeft();
-    const balancerTR = balancerBlueprint.topRight();
-    const balancerHeight = Math.abs(balancerTR.y - balancerBL.y);
-    const balancerWidth = Math.abs(balancerTR.x - balancerBL.x);
+	const balancerBL = balancerBlueprint.bottomLeft();
+	const balancerTR = balancerBlueprint.topRight();
+	const balancerHeight = Math.abs(balancerTR.y - balancerBL.y);
+	const balancerWidth = Math.abs(balancerTR.x - balancerBL.x);
 
-    let balancerOffsetX = 0;
-    let balancerOffsetY = 0;
+	let balancerOffsetX = 0;
+  let balancerOffsetY = 0;
 
     //there seems to be a problem with blueprint orientation, so get min and max manually;
     const xmin = Math.min(balancerBL.x, balancerTR.x);
@@ -217,7 +218,9 @@ module.exports = function(string, opt = {}) {
 
   if (INCLUDE_RADAR) {
     bp.createEntity('radar', { x: 0, y: -3 });
-    bp.createEntity('medium_electric_pole', { x: -1, y: -2 });
+    if(INCLUDE_LIGHTS)
+	    bp.createEntity('small_lamp', { x: -1, y: -3 });
+	  bp.createEntity('medium_electric_pole', {x: -1, y: -2});
   }
 
   const SPLITTER_ON_LAST = Math.floor((X_LENGTH - 2) * FINAL_LANES / X_LENGTH) == Math.floor((X_LENGTH - 1) * FINAL_LANES / X_LENGTH)
@@ -240,11 +243,29 @@ module.exports = function(string, opt = {}) {
       if (!COMPACT) {
         const pos = { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE };
         bp.createEntity('medium_electric_pole', pos);
-        if (NEED_ADDITIONAL_POLES) bp.createEntity('medium_electric_pole', { x: pos.x, y: pos.y + 5 });
+        if (INCLUDE_LIGHTS) {
+          const lpos = { x: OFFSET_X - 1, y: OFFSET_Y + MINER_SIZE + 1 };
+          bp.createEntity('small_lamp', lpos);
+        }
+        if (NEED_ADDITIONAL_POLES) {
+          bp.createEntity('medium_electric_pole', { x: pos.x, y: pos.y + 5 });
+          if (INCLUDE_LIGHTS) {
+            bp.createEntity('small_lamp', { x: pos.x, y: pos.y + 6 });
+          }
+        } 
       } else {
         const pos = { x: OFFSET_X + 3, y: OFFSET_Y + MINER_SIZE - 1 };
         bp.createEntity('medium_electric_pole', pos);
-        if (NEED_ADDITIONAL_POLES) bp.createEntity('medium_electric_pole', { x: pos.x, y: pos.y + 5 });
+        if (INCLUDE_LIGHTS) {
+          const lpos = { x: OFFSET_X + 3, y: OFFSET_Y + MINER_SIZE };
+          bp.createEntity('small_lamp', lpos);
+        }
+        if (NEED_ADDITIONAL_POLES) {
+          bp.createEntity('medium_electric_pole', { x: pos.x, y: pos.y + 5 });
+          if (INCLUDE_LIGHTS) {
+            bp.createEntity('small_lamp', { x: pos.x, y: pos.y + 6 });
+          }
+        } 
       }
 
       if (MODULE) {
@@ -254,7 +275,9 @@ module.exports = function(string, opt = {}) {
       }
 
       if (x == X_LENGTH - 1) {
-        bp.createEntity('medium_electric_pole', { x: OFFSET_X + MINER_SIZE * 2 + 1, y: OFFSET_Y + MINER_SIZE });
+        bp.createEntity('medium_electric_pole', { x: OFFSET_X + MINER_SIZE*2 + 1, y: OFFSET_Y + MINER_SIZE });
+        if (INCLUDE_LIGHTS)
+          bp.createEntity('small_lamp', { x: OFFSET_X + MINER_SIZE*2 + 1, y: OFFSET_Y + MINER_SIZE + 1});
       }
 
       if (!BOT_BASED) {
@@ -410,21 +433,43 @@ module.exports = function(string, opt = {}) {
 
         if (i == 0 && l == LOADING_BAYS - 1) {
           bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition + 1 });
-          if (LOAD_FROM_BOTH_SIDES) bp.createEntity('medium_electric_pole', { x: xPosition + 6, y: yPosition + 1 });
+          if (INCLUDE_LIGHTS)
+            try{
+              bp.createEntity('small_lamp', { x: xPosition + 2, y: yPosition + 1 });
+            }catch(e){
+              bp.createEntity('small_lamp', { x: xPosition + 3, y: yPosition + 2 });
+            }
+
+          if (LOAD_FROM_BOTH_SIDES) {
+            bp.createEntity('medium_electric_pole', { x: xPosition + 6, y: yPosition + 1 });
+            if (INCLUDE_LIGHTS)
+              try{
+                bp.createEntity('small_lamp', { x: xPosition + 7, y: yPosition + 1 });
+              }catch(e){
+                bp.createEntity('small_lamp', { x: xPosition + 6, y: yPosition + 2 });
+              }
+  
+          }
         } else if (i == 5) {
           bp.createEntity('medium_electric_pole', { x: xPosition + 3, y: yPosition - 1 });
-          if (LOAD_FROM_BOTH_SIDES) bp.createEntity('medium_electric_pole', { x: xPosition + 6, y: yPosition - 1 });
+          if (INCLUDE_LIGHTS)
+              bp.createEntity('small_lamp', { x: xPosition + 2, y: yPosition - 1 });
+          if (LOAD_FROM_BOTH_SIDES) {
+            bp.createEntity('medium_electric_pole', { x: xPosition + 6, y: yPosition - 1 });
+            if (INCLUDE_LIGHTS)
+              bp.createEntity('small_lamp', { x: xPosition + 7, y: yPosition - 1 });
+          }
         }
         if (!BOT_BASED) bp.createEntity('fast_inserter', { x: xPosition + 1, y: yPosition }, Blueprint.LEFT); // Grab FROM left
         if (!BOT_BASED && LOAD_FROM_BOTH_SIDES) bp.createEntity('fast_inserter', { x: xPosition + 8, y: yPosition }, Blueprint.RIGHT);
 
         if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 2, y: yPosition });
         else bp.createEntity('logistic_chest_requester', { x: xPosition + 2, y: yPosition })
-          .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
+               .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
         if (LOAD_FROM_BOTH_SIDES) {
           if (!BOT_BASED) bp.createEntity('steel_chest', { x: xPosition + 7, y: yPosition });
           else bp.createEntity('logistic_chest_requester', { x: xPosition + 7, y: yPosition })
-            .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
+                 .setRequestFilter(1, REQUEST_TYPE, REQUEST_AMOUNT);
         }
         bp.createEntity(inserterType, { x: xPosition + 3, y: yPosition }, Blueprint.LEFT);
         if (LOAD_FROM_BOTH_SIDES) bp.createEntity(inserterType, { x: xPosition + 6, y: yPosition }, Blueprint.RIGHT);
@@ -440,7 +485,8 @@ module.exports = function(string, opt = {}) {
           SINGLE_HEADED_TRAIN,
           WALL_SPACE,
           WALL_THICKNESS,
-          INCLUDE_RADAR
+          INCLUDE_RADAR,
+          INCLUDE_LIGHTS
         });
 
         if (ROBOPORTS) {
@@ -480,7 +526,8 @@ module.exports = function(string, opt = {}) {
     WALL_SPACE,
     WALL_THICKNESS,
     CONCRETE,
-    BORDER_CONCRETE
+    BORDER_CONCRETE,
+    INCLUDE_LIGHTS
   }); // Pass in same opt, same names for defenses
 
   bp.fixCenter();
