@@ -10,6 +10,7 @@ module.exports = function(bp, { x, y }, highY, { lowerY, LOCOMOTIVES, TRACK_CONC
   if(INCLUDE_LIGHTS && !SINGLE_HEADED_TRAIN) {
     bp.createEntity('small_lamp', { x: xPosition, y: yPosition - 1 });
     bp.createEntity('small_lamp', { x: xPosition + 1, y: yPosition - 1 });
+    bp.createEntity('medium_electric_pole', { x: xPosition + 1, y: yPosition - 2 });
   }
   for (let i = 0; i <= highY - trainStopLocation.y + WALL_SPACE + WALL_THICKNESS + 3; i += 2) {
     bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
