@@ -71,24 +71,32 @@ module.exports = function(bp, { lowerX, upperX, lowerY, upperY }, { TURRETS_ENAB
         { 
           bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: x, y: lowerY - WALL_SPACE - i }, Blueprint.RIGHT, true);
           if(!ent1){
-            if(placedLowerGateLast)
+            if(placedLowerGateLast) {
               bp.createEntity('small_lamp', { x: x, y: lowerY - WALL_SPACE - i - 1 }, Blueprint.RIGHT, true);
-              placedLowerGateLast = false;
+              bp.createEntity('medium_electric_pole', { x: x + 1, y: lowerY - WALL_SPACE - i - 1 }, Blueprint.RIGHT, true);
+            }
+            placedLowerGateLast = false;
           }else{
-            if(!placedLowerGateLast)
+            if(!placedLowerGateLast) {
               bp.createEntity('small_lamp', { x: x - 1, y: lowerY - WALL_SPACE - i - 1 }, Blueprint.RIGHT, true);
-              placedLowerGateLast = true;
+              bp.createEntity('medium_electric_pole', { x: x - 2, y: lowerY - WALL_SPACE - i - 1 }, Blueprint.RIGHT, true);
+            }
+            placedLowerGateLast = true;
           }
         }
         if (!ent2 || ent2.name == 'straight_rail') {
           bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: x, y: upperY + WALL_SPACE + i }, Blueprint.RIGHT, true);
           if(!ent2){
-            if(placedUpperGateLast)
+            if(placedUpperGateLast) {
               bp.createEntity('small_lamp', { x: x, y: upperY + WALL_SPACE + i + 1 }, Blueprint.RIGHT, true);
-              placedUpperGateLast = false;
+              bp.createEntity('medium_electric_pole', { x: x + 1, y: upperY + WALL_SPACE + i + 1 }, Blueprint.RIGHT, true);
+            }
+            placedUpperGateLast = false;
           }else{
-            if(!placedUpperGateLast)
+            if(!placedUpperGateLast) {
               bp.createEntity('small_lamp', { x: x - 1, y: upperY + WALL_SPACE + i + 1 }, Blueprint.RIGHT, true);
+              bp.createEntity('medium_electric_pole', { x: x - 2, y: upperY + WALL_SPACE + i + 1 }, Blueprint.RIGHT, true);
+            }
             placedUpperGateLast = true;
           }
         }
@@ -101,24 +109,32 @@ module.exports = function(bp, { lowerX, upperX, lowerY, upperY }, { TURRETS_ENAB
         if (!ent1 || ent1.name == 'straight_rail') {
           bp.createEntity(ent1 ? 'gate' : 'stone_wall', { x: lowerX - WALL_SPACE - i, y: y }, Blueprint.DOWN, true);
           if(!ent1){
-            if(placedLowerGateLast)
+            if(placedLowerGateLast) {
               bp.createEntity('small_lamp', { x: lowerX - WALL_SPACE - i - 1, y: y }, Blueprint.RIGHT, true);
-              placedLowerGateLast = false;
+              bp.createEntity('medium_electric_pole', { x: lowerX - WALL_SPACE - i - 1, y: y + 1 }, Blueprint.RIGHT, true);
+            }
+            placedLowerGateLast = false;
           }else{
-            if(!placedLowerGateLast)
+            if(!placedLowerGateLast) {
               bp.createEntity('small_lamp', { x: lowerX - WALL_SPACE - i - 1, y: y - 1 }, Blueprint.RIGHT, true);
-              placedLowerGateLast = true;
+              bp.createEntity('medium_electric_pole', { x: lowerX - WALL_SPACE - i - 1, y: y - 2 }, Blueprint.RIGHT, true);
+            }
+            placedLowerGateLast = true;
           }
         }
         if (!ent2 || ent2.name == 'straight_rail') {
           bp.createEntity(ent2 ? 'gate' : 'stone_wall', { x: upperX + WALL_SPACE + i, y: y }, Blueprint.DOWN, true);
           if(!ent2){
-            if(placedUpperGateLast)
+            if(placedUpperGateLast) {
               bp.createEntity('small_lamp', { x: upperX + WALL_SPACE + i + 1, y: y }, Blueprint.RIGHT, true);
-              placedUpperGateLast = false;
+              bp.createEntity('medium_electric_pole', { x: upperX + WALL_SPACE + i + 1, y: y + 1 }, Blueprint.RIGHT, true);
+            }
+            placedUpperGateLast = false;
           }else{
-            if(!placedUpperGateLast)
+            if(!placedUpperGateLast) {
               bp.createEntity('small_lamp', { x: upperX + WALL_SPACE + i + 1, y: y - 1 }, Blueprint.RIGHT, true);
+              bp.createEntity('medium_electric_pole', { x: upperX + WALL_SPACE + i + 1, y: y - 2 }, Blueprint.RIGHT, true);
+            }
             placedUpperGateLast = true;
           }
         }
