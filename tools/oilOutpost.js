@@ -51,6 +51,7 @@ module.exports = function(string, opt = {}) {
   // General
   const MODULE = opt.module;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
+  const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : true;
   const TANKS = useOrDefault(opt.tanks, 2);
   const USE_BEACONS = !!opt.beacons;
 
@@ -318,6 +319,7 @@ module.exports = function(string, opt = {}) {
       WALL_SPACE,
       WALL_THICKNESS,
       INCLUDE_RADAR,
+      INCLUDE_LIGHTS,
       lowerY: lowerY
     });
 
@@ -360,7 +362,8 @@ module.exports = function(string, opt = {}) {
     WALL_SPACE,
     WALL_THICKNESS,
     CONCRETE,
-    BORDER_CONCRETE
+    BORDER_CONCRETE,
+    INCLUDE_LIGHTS
   });
 
   if (MODULE) {
