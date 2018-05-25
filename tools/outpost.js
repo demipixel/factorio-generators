@@ -479,7 +479,7 @@ module.exports = function(string, opt = {}) {
 
       if (l == 0) {
         RAIL_X = OFFSET_X;
-        trainStopLocation = generateTrainStation(bp, { x: OFFSET_X, y: OFFSET_Y }, START_TO_CARGO + LOADING_BAYS * (LOAD_FROM_BOTH_SIDES ? 2 : 1), {
+        trainStopLocation = generateTrainStation(bp, { x: OFFSET_X, y: OFFSET_Y }, START_TO_CARGO + ((SINGLE_HEADED_TRAIN ? 0 : 1) * LOCOMOTIVES) + (LOADING_BAYS * (LOAD_FROM_BOTH_SIDES ? 2 : 1)), {
           LOCOMOTIVES,
           TRACK_CONCRETE,
           SINGLE_HEADED_TRAIN,
@@ -517,7 +517,7 @@ module.exports = function(string, opt = {}) {
   const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
 
   const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
-  const upperY = Y_LENGTH * Y_SIZE + Math.max(LOADING_BAYS, X_LENGTH) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
+  const upperY = Y_LENGTH * Y_SIZE + Math.max(LOADING_BAYS, X_LENGTH) + (SINGLE_HEADED_TRAIN ? 0 : LOCOMOTIVES) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
 
   generateDefenses(bp, { lowerX, upperX, lowerY, upperY }, {
     TURRETS_ENABLED,
