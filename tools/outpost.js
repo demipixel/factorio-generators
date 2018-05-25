@@ -91,6 +91,7 @@ module.exports = function(string, opt = {}) {
   const FINAL_LANES = useOrDefault(opt.cargoWagonCount, 4) * (LOAD_FROM_BOTH_SIDES ? 2 : 1);
   const LOADING_BAYS = useOrDefault(opt.cargoWagonCount, 4);
   const SINGLE_HEADED_TRAIN = opt.exitRoute || false;
+  const ADDITIONAL_SPACE = useOrDefault(opt.addtionalStationSpace, 0);
 
   // Bot info
   const BOT_BASED = opt.botBased || false;
@@ -514,7 +515,7 @@ module.exports = function(string, opt = {}) {
   // Place walls and laser turrets
 
   const lowerX = -2;
-  const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
+  const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0) + ADDITIONAL_SPACE;
 
   const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
   const upperY = Y_LENGTH * Y_SIZE + Math.max(LOADING_BAYS, X_LENGTH) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
