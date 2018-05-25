@@ -69,6 +69,7 @@ module.exports = function(string, opt = {}) {
   const LOCOMOTIVES = useOrDefault(opt.locomotiveCount, 1);
   const WAGONS = useOrDefault(opt.wagonCount, 2);
   const SINGLE_HEADED_TRAIN = opt.exitRoute || false;
+  const ADDITIONAL_SPACE = useOrDefault(opt.addtionalStationSpace, 0);
 
   // Bot info
   const BOT_BASED = opt.botBased || false;
@@ -353,7 +354,7 @@ module.exports = function(string, opt = {}) {
     trainStopLocation = { x: target.x + 3 + 3 * TANKS, y: target.y - 2 };
   }
 
-  const upperX = bp.topRight().x;
+  const upperX = bp.topRight().x + ADDITIONAL_SPACE;
 
   generateDefenses(bp, { lowerX, upperX, lowerY, upperY }, {
     TURRETS_ENABLED,
