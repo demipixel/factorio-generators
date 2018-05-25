@@ -12,7 +12,8 @@ module.exports = function(bp, { x, y }, highY, { lowerY, LOCOMOTIVES, TRACK_CONC
     bp.createEntity('small_lamp', { x: xPosition + 1, y: yPosition - 1 });
     bp.createEntity('medium_electric_pole', { x: xPosition + 1, y: yPosition - 2 });
   }
-  for (let i = 0; i <= highY - trainStopLocation.y + WALL_SPACE + WALL_THICKNESS + 3; i += 2) {
+  let i = 0;
+  for (; i <= highY - trainStopLocation.y + WALL_SPACE + WALL_THICKNESS + 3; i += 2) {
     bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
     // Concrete
     if (TRACK_CONCRETE) {
@@ -25,6 +26,8 @@ module.exports = function(bp, { x, y }, highY, { lowerY, LOCOMOTIVES, TRACK_CONC
       }
     }
   }
+  bp.createEntity('straight_rail', { x: xPosition, y: yPosition + i }, Blueprint.DOWN);
+  bp.createEntity('rail_signal', { x: xPosition + 2, y: yPosition + i }, Blueprint.DOWN);
   if (SINGLE_HEADED_TRAIN) {
     const LOWER_Y = typeof lowerY != 'undefined' ? lowerY : Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y) - 1;
     for (let i = 2; i < (yPosition - LOWER_Y) + WALL_SPACE + 1 + WALL_THICKNESS; i += 2) {
