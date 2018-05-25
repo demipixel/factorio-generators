@@ -313,7 +313,7 @@ module.exports = function(string, opt = {}) {
   if (INCLUDE_TRAIN_STATION) {
     trainStopLocation = generateTrainStation(bp,
        { x: target.x + 3 + 3 * TANKS, y: target.y - 2 },
-        Math.max(bp.bottomRight().y, target.y + 2 + WAGONS * 7 + ((SINGLE_HEADED_TRAIN ? 0 : 1) * LOCOMOTIVES)), 
+        Math.max(bp.bottomRight().y, target.y + 2 + WAGONS * 7 + ((SINGLE_HEADED_TRAIN ? 0 : 1) * LOCOMOTIVES) * 7), 
         {
       LOCOMOTIVES,
       TRACK_CONCRETE,
