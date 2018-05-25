@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-const GENERATOR = require('./index').outpost;
+const GENERATOR = require('./index');
 const MEOW = require('meow');
 const YAML = require('yamljs');
 
@@ -9,6 +9,11 @@ const options = [
         name: 'minedOreDirection',
         alias: 'direction',
         description: '0-3 direction ore should flow when mined (0 is up) (default 2)'
+    },
+    {
+        name: 'oilOutpost',
+        alias: 'oil',
+        description: 'Generate an oil outpost instead of an ore outpost'
     },
     {
         name: 'trainDirection',
@@ -201,12 +206,12 @@ options.forEach(function (val) {
 
 const cli = MEOW(`
 	Usage
-	  $ outpost-gen blueprintstring
+	  $ cli blueprintstring
 	Options
 	  ${usageOptions}
 	Examples
-	  $ outpost-gen 0eNqNj8EKwj... --minedOreDirection=1 --radar=true --locomotives=1 --wagons=2
-	  $ outpost-gen 0eNqNj8EKwj... --useFile=config.yaml`, {
+	  $ cli 0eNqNj8EKwj... --minedOreDirection=1 --radar=true --locomotives=1 --wagons=2
+	  $ cli 0eNqNj8EKwj... --useFile=config.yaml`, {
     alias: aliases
 });
 
@@ -244,6 +249,7 @@ options.forEach(function (val) {
         opts[val.name] = validateData(val.name, args[val.name]);
         //delete processed keys from arguments array
         delete args[val.name]
+        delete args[val.alias]
     }
 });
 
@@ -262,7 +268,7 @@ if (Object.keys(args).length >= 1) {
 }
 
 try {
-    console.log(GENERATOR(blueprint, opts));
+    console.log(opts.oilOutpost ? GENERATOR.oilOutpost(blueprint, opts) : GENERATOR.outpost(blueprint, opts));
 } catch (e) {
     console.log(e.message);
 }
