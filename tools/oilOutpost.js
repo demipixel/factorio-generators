@@ -51,6 +51,7 @@ module.exports = function(string, opt = {}) {
   // General
   const MODULE = opt.module;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
+  const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : true;
   const TANKS = useOrDefault(opt.tanks, 2);
   const USE_BEACONS = !!opt.beacons;
 
@@ -68,6 +69,7 @@ module.exports = function(string, opt = {}) {
   const LOCOMOTIVES = useOrDefault(opt.locomotiveCount, 1);
   const WAGONS = useOrDefault(opt.wagonCount, 2);
   const SINGLE_HEADED_TRAIN = opt.exitRoute || false;
+  const ADDITIONAL_SPACE = useOrDefault(opt.addtionalStationSpace, 0);
 
   // Bot info
   const BOT_BASED = opt.botBased || false;
@@ -310,17 +312,21 @@ module.exports = function(string, opt = {}) {
   let trainStopLocation = null;
 
   if (INCLUDE_TRAIN_STATION) {
-    trainStopLocation = generateTrainStation(bp, { x: target.x + 3 + 3 * TANKS, y: target.y - 2 }, Math.max(bp.bottomRight().y, target.y - 2 -
-      WAGONS * 7), {
+    trainStopLocation = generateTrainStation(bp,
+       { x: target.x + 3 + 3 * TANKS, y: target.y - 2 },
+        Math.max(bp.bottomRight().y, target.y + 2 + WAGONS * 7 + ((SINGLE_HEADED_TRAIN ? 0 : 1) * LOCOMOTIVES) * 7), 
+        {
       LOCOMOTIVES,
       TRACK_CONCRETE,
       SINGLE_HEADED_TRAIN,
       WALL_SPACE,
       WALL_THICKNESS,
       INCLUDE_RADAR,
-      lowerY: lowerY
+      INCLUDE_LIGHTS
     });
-
+    lowerY = Math.min(bp.topLeft().y, INCLUDE_RADAR ? -3 : 0);
+    //move the uppery if neccessary
+    upperY = Math.max(bp.bottomLeft().y - 1 - WALL_SPACE - WALL_THICKNESS);
     const CONNECT_OFFSET = TANKS % 2 == 0 ? -2 : 0; // Target connects two lower depending on tank directions
 
     for (let i = 0; i < WAGONS; i++) {
@@ -351,7 +357,7 @@ module.exports = function(string, opt = {}) {
     trainStopLocation = { x: target.x + 3 + 3 * TANKS, y: target.y - 2 };
   }
 
-  const upperX = bp.topRight().x;
+  const upperX = bp.topRight().x + ADDITIONAL_SPACE;
 
   generateDefenses(bp, { lowerX, upperX, lowerY, upperY }, {
     TURRETS_ENABLED,
@@ -360,7 +366,8 @@ module.exports = function(string, opt = {}) {
     WALL_SPACE,
     WALL_THICKNESS,
     CONCRETE,
-    BORDER_CONCRETE
+    BORDER_CONCRETE,
+    INCLUDE_LIGHTS
   });
 
   if (MODULE) {
