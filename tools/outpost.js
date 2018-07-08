@@ -515,7 +515,7 @@ module.exports = function(string, opt = {}) {
   // Place walls and laser turrets
 
   const lowerX = -2;
-  const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0) + ADDITIONAL_SPACE;
+  const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS +1 : 0) + ADDITIONAL_SPACE;
 
   const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
   const upperY = Y_LENGTH * Y_SIZE + Math.max(LOADING_BAYS, X_LENGTH) + (SINGLE_HEADED_TRAIN ? 0 : LOCOMOTIVES * 7) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
