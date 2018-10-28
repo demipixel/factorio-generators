@@ -145,18 +145,18 @@ module.exports = function(string, opt = {}) {
     throw new Error('Error loading blueprint: ' + e.message);
   }
 
-  if (templateBlueprint.entities.length != 2 || templateBlueprint.entities.filter(e => e.name == 'stone_wall').length != 2) {
-    throw new Error('Blueprint must contain only 2 entities: Walls at the position of the corners of the mine.');
+  if (templateBlueprint.entities.length < 2 || templateBlueprint.entities.some(e => e.name !== 'stone_wall')) {
+    throw new Error('Blueprint must contain only walls and must contain at least two.');
   }
 
   const topLeft = {
-    x: Math.min(templateBlueprint.entities[0].position.x, templateBlueprint.entities[1].position.x),
-    y: Math.min(templateBlueprint.entities[0].position.y, templateBlueprint.entities[1].position.y),
+    x: Math.min(...templateBlueprint.entities.map(e => e.position.x)),
+    y: Math.min(...templateBlueprint.entities.map(e => e.position.y)),
   };
 
   const bottomRight = {
-    x: Math.max(templateBlueprint.entities[0].position.x, templateBlueprint.entities[1].position.x),
-    y: Math.max(templateBlueprint.entities[0].position.y, templateBlueprint.entities[1].position.y),
+    x: Math.max(...templateBlueprint.entities.map(e => e.position.x)),
+    y: Math.max(...templateBlueprint.entities.map(e => e.position.y)),
   };
 
   if (bottomRight.x - topLeft.x < 3 || bottomRight.y - topLeft.y < 3) {
