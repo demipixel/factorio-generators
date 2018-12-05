@@ -9,8 +9,8 @@
 
 Generates an outpost given a blueprintString with 2 walls at the corner of the ore patch you want to cover. Options are:
 
-- trainDirection: 0-3, side train station should enter from (0 is top) (default 2 bottom)
-- trainSide: 0-3, side the train station should be on (Must be perpendicular to minedOreDirection) (default 1 right)
+- trainSide: 0-3, side the train station should be on (default 1 right)
+- trainDirection: 0-3, side train station should enter from (Must be perpendicular to trainSide) (default 2 bottom)
 - minerSpace: 0-2, space between miners (default 1)
 - module: Module name to fill up miners with, empty for none
 - includeRadar: Boolean, whether or not to include a radar (default true)
