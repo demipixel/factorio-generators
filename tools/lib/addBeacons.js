@@ -1,14 +1,7 @@
-const PUMPJACK_EXIT_DIRECTION = {
-  0: { x: 2, y: -1 },
-  1: { x: 3, y: 0 },
-  2: { x: 0, y: 3 },
-  3: { x: -1, y: 2 }
-};
-
 const ACTIVATIONS = {
   sigmoid: x => 1 / (1 + Math.pow(Math.E, Math.max(-60, Math.min(60, x * 5.0)))),
   relu: x => Math.max(x, 0.0)
-}
+};
 
 const NODES =
   `
@@ -21,7 +14,7 @@ const NODES =
       key: parseInt(m[1]),
       bias: parseInt(m[2]),
       activation: m[3]
-    }
+    };
   });
 
 
@@ -187,7 +180,7 @@ DefaultConnectionGene(key=(4063, 0), weight=2.28399291126, enabled=True)
       from: parseInt(m[1]),
       to: parseInt(m[2]),
       weight: parseInt(m[3])
-    } : null
+    } : null;
   }).filter(connection => !!connection);
 
 function runNN(input) {
@@ -222,12 +215,7 @@ function shouldPlaceBeacon(bp, posX, posY) {
   return reach && runNN(input) >= 0.5;
 }
 
-function placeBeacons(bp, getPumpjackOutput) {
-  const tempPipes = [];
-  bp.entities.filter(ent => ent.name == 'pumpjack').forEach(pumpjack => {
-    tempPipes.push(bp.createEntity('pipe', getPumpjackOutput(pumpjack)));
-  });
-
+function placeBeacons(bp) {
   const start = bp.topLeft().subtract({ x: 5, y: 5 });
   const end = bp.bottomRight().add({ x: 5, y: 5 });
   for (let x = start.x; x <= end.x; x++) {
@@ -246,8 +234,6 @@ function placeBeacons(bp, getPumpjackOutput) {
       }
     }
   }
-
-  tempPipes.forEach(pipe => bp.removeEntity(pipe));
 }
 
-module.exports = placeBeacons
+module.exports = placeBeacons;

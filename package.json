@@ -11,6 +11,7 @@
   "dependencies": {
     "a-star": "git+https://github.com/andrewrk/node-astar.git",
     "factorio-blueprint": "git+https://github.com/demipixel/factorio-blueprint.git",
+    "js-graph-algorithms": "^1.0.18",
     "meow": "^3.7.0",
     "yamljs": "^0.2.10"
   }
