@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+'use strict';
+const GENERATOR = require('./index');
+const MEOW = require('meow');
+
+const cli = MEOW(`
+	Usage
+	  $ cliSupplyChest blueprintstring
+	Examples
+	  $ cliSupplyChest 0eNqNj8EKwj...`
+);
+
+let blueprint = '';
+//if no input (arguments without -- prefixed) show help and exit the program
+if (cli.input.length === 0) {
+    cli.showHelp();
+    return;
+} else {
+    blueprint = cli.input[0]
+}
+
+try {
+    global.console = new console.Console({ stdout: process.stderr, stderr: process.stderr });
+    process.stdout.write(GENERATOR.requesterChest(blueprint));
+} catch (e) {
+    console.log(e.message);
+}
