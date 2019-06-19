@@ -133,6 +133,16 @@ const options = [
         description: 'Blueprint string for an NxN balancer if the script does not have any available (N being the # of cargo wagons) (no default)'
     },
     {
+        name: 'pumpjackName',
+        alias: null,
+        description: 'Name of modded pumpjack (not needed if using vanilla pumpjacks)'
+    },
+    {
+        name: 'includeLights',
+        alias: 'lights',
+        description: 'Include lights in the outpost'
+    },
+    {
         name: 'useFile',
         alias: 'file',
         description: 'Use Yaml File for config instead of cli arguments'
@@ -141,6 +151,8 @@ const options = [
 function validateData(name, data) {
 
     switch (name) {
+        case 'includeLights':
+            return true;
         case 'minedOreDirection':
         case 'trainDirection': {
             if (parseInt(data) < 0 || parseInt(data) > 3) {

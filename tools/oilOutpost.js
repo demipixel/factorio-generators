@@ -49,9 +49,10 @@ module.exports = function(string, opt = {}) {
   if (Math.abs(TRAIN_SIDE - TRAIN_DIRECTION) % 2 == 0) throw new Error('opt.trainSide and opt.trainDirection must be perpendicular.');
 
   // General
+  const PUMPJACK_NAME = opt.pumpjackName != undefined ? opt.pumpjackName : 'pumpjack';
   const MODULE = opt.module;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
-  const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : true;
+  const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : false;
   const TANKS = useOrDefault(opt.tanks, 2);
   const USE_BEACONS = !!opt.beacons;
 
@@ -86,6 +87,7 @@ module.exports = function(string, opt = {}) {
   if (CONCRETE) newEntityData[CONCRETE] = { type: 'tile' }
   if (BORDER_CONCRETE && !newEntityData[BORDER_CONCRETE]) newEntityData[BORDER_CONCRETE] = { type: 'tile' }
   if (TRACK_CONCRETE && !newEntityData[TRACK_CONCRETE]) newEntityData[TRACK_CONCRETE] = { type: 'tile' }
+  if (PUMPJACK_NAME && !newEntityData[PUMPJACK_NAME]) newEntityData[PUMPJACK_NAME] = { type: 'entity', width: 3, height: 3 }
   Blueprint.setEntityData(newEntityData);
 
   function getPumpjackOutput(pumpjack) {
@@ -146,7 +148,7 @@ module.exports = function(string, opt = {}) {
 
 
   bp.entities.forEach(ent => {
-    if (ent.name != 'pumpjack') throw new Error('The blueprint must only contain pumpjacks and one track!');
+    if (ent.name != PUMPJACK_NAME) throw new Error('The blueprint must only contain pumpjacks and one track!');
     else if (bp.findEntity(getPumpjackOutput(ent))) {
       throw new Error('A pumpjack is facing into another pumpjack!');
     }
@@ -159,7 +161,7 @@ module.exports = function(string, opt = {}) {
   target.x += -(target.x % 2) + alignment.x
   target.y += -(target.y % 2) + alignment.y;
 
-  bp.entities.filter(ent => ent.name == 'pumpjack').forEach(pumpjack => {
+  bp.entities.filter(ent => ent.name == PUMPJACK_NAME).forEach(pumpjack => {
     let powered = false;
     bp.entities.filter(ent => ent.name == 'medium_electric_pole').forEach(pole => {
       if (powered) return;
@@ -190,7 +192,7 @@ module.exports = function(string, opt = {}) {
       let blocking = false;
       SIDES.forEach(side => {
         const ent = bp.findEntity({ x: x + side.x, y: y + side.y });
-        if (!ent || ent.name != 'pumpjack') return;
+        if (!ent || ent.name != PUMPJACK_NAME) return;
         const otherOutput = getPumpjackOutput(ent);
         if (otherOutput.x == x && otherOutput.y == y) blocking = true;
       });
@@ -201,7 +203,7 @@ module.exports = function(string, opt = {}) {
     }
   });
 
-  bp.entities.filter(ent => ent.name == 'pumpjack').forEach(pumpjack => {
+  bp.entities.filter(ent => ent.name == PUMPJACK_NAME).forEach(pumpjack => {
     if (bp.findEntity(getPumpjackOutput(pumpjack))) return;
     // if (bp.findEntity(getPumpjackOutput(pumpjack))) bp.findEntity(getPumpjackOutput(pumpjack)).remove();
     const result = aStar({
@@ -264,7 +266,7 @@ module.exports = function(string, opt = {}) {
 
       const sidePipes = SIDES.map(side => bp.findEntity(pos.clone().add(side)))
         .filter(ent => !!ent)
-        .filter(ent => ent.name == 'pipe' || (ent.name == 'pumpjack' && (getPumpjackOutput(ent).x == pos.x && getPumpjackOutput(ent).y == pos.y)))
+        .filter(ent => ent.name == 'pipe' || (ent.name == PUMPJACK_NAME && (getPumpjackOutput(ent).x == pos.x && getPumpjackOutput(ent).y == pos.y)))
         .map(ent => ent.position);
 
       if (pos.from) {
@@ -371,7 +373,7 @@ module.exports = function(string, opt = {}) {
   });
 
   if (MODULE) {
-    bp.entities.filter(ent => ent.name == 'pumpjack').forEach(ent => {
+    bp.entities.filter(ent => ent.name == PUMPJACK_NAME).forEach(ent => {
       ent.modules[MODULE] = 2;
     });
   }
@@ -387,7 +389,7 @@ module.exports = function(string, opt = {}) {
         return;
       }
       e.position.x = -e.position.x - e.size.x;
-      if (e.name != 'pumpjack') {
+      if (e.name != PUMPJACK_NAME) {
         if (e.direction == 2 || e.direction == 6) {
           e.direction = e.direction == 2 ? 6 : 2;
         }
@@ -402,7 +404,7 @@ module.exports = function(string, opt = {}) {
   const finalBp = new Blueprint();
 
   finalBp.placeBlueprint(bp, { x: 0, y: 0 }, ROTATE_ALL);
-  finalBp.name = NAME.replace('%pumpjacks%', finalBp.entities.filter(e => e.name == 'pumpjack').length);
+  finalBp.name = NAME.replace('%pumpjacks%', finalBp.entities.filter(e => e.name == PUMPJACK_NAME).length);
 
   return finalBp.encode();
 }

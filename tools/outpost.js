@@ -73,7 +73,7 @@ module.exports = function(string, opt = {}) {
   const USE_STACKER_INSERTER = opt.useStackInserters != undefined ? !!opt.useStackInserters : true;
   const USE_FILTER_INSERTER = opt.useFilterInserters != undefined ? !!opt.useFilterInserters : true;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
-  const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : true;
+  const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : false;
 
   // Defenses
   const TURRETS_ENABLED = opt.turrets != undefined ? opt.turrets : true;
