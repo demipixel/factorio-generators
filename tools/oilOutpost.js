@@ -148,7 +148,10 @@ module.exports = function(string, opt = {}) {
 
 
   bp.entities.forEach(ent => {
-    if (ent.name != PUMPJACK_NAME) throw new Error('The blueprint must only contain pumpjacks and one track!');
+    if (ent.name != PUMPJACK_NAME) {
+      let errStr = PUMPJACK_NAME == 'pumpjack' ? '' : ' (Name: '+PUMPJACK_NAME+')'
+      throw new Error('The blueprint must only contain pumpjacks'+errStr+' and one track!');
+    }
     else if (bp.findEntity(getPumpjackOutput(ent))) {
       throw new Error('A pumpjack is facing into another pumpjack!');
     }
