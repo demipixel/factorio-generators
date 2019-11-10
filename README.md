@@ -56,6 +56,7 @@ Modifies a blueprint in different ways and returns a new blueprint string.
 
 - flipX: Boolean, flip along the X axis (default false)
 - flipY: Boolean, flip along the Y axis (default false)
+- landfillEntities: Boolean, place landfill under entities (default false)
 - The following are an array of objects with a key `to` for the entity name to convert to and `from` for an exact name or `includes` for any entity including the string
 - entityReplace: Array of objects to convert entity types in the form { from: 'name', to: 'name' } (default empty array)
 - recipeReplace: Array of objects to convert recipes in assembly machines in the form { from: 'name', to: 'name' } (default empty array)
