@@ -5,6 +5,7 @@ module.exports = function(string, opt) {
 
   const FLIP_X = opt.flipX || false;
   const FLIP_Y = opt.flipY || false;
+  const LANDFILL_ENTITIES = opt.landfillEntities || false;
   const ENTITY_REPLACE = opt.entityReplace || [];
   const RECIPE_REPLACE = opt.recipeReplace || [];
   const MODULE_REPLACE = opt.moduleReplace || [];
@@ -178,6 +179,17 @@ module.exports = function(string, opt) {
         e.position.y = -e.position.y - 1;
       });
       bp.fixCenter({ x: 0, y: 1 }); // In case of tracks
+    }
+    if (LANDFILL_ENTITIES) {
+      bp.entities.forEach(e => {
+        if (e.name !== 'offshore_pump') { // offshore pumps are built on water
+          for (let ox = 0; ox < e.size.x; ox++) {
+            for (let oy = 0; oy < e.size.y; oy++) {
+              bp.createTile('landfill', { x: e.position.x + ox, y: e.position.y + oy });
+            }
+          }
+        }
+      });
     }
   }
   if (isBook) {
