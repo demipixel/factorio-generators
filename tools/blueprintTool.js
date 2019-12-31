@@ -1,6 +1,5 @@
 const Blueprint = require('factorio-blueprint');
 module.exports = function(string, opt) {
-
   opt = opt || {};
 
   const FLIP_X = opt.flipX || false;
@@ -28,14 +27,22 @@ module.exports = function(string, opt) {
 
     const newEntityData = {};
     old.icons.forEach(icon => {
-      if (!Blueprint.getEntityData()[icon]) newEntityData[icon] = { type: 'item' };
+      if (!Blueprint.getEntityData()[icon])
+        newEntityData[icon] = { type: 'item' };
     });
 
     [ENTITY_REPLACE, RECIPE_REPLACE, MODULE_REPLACE].forEach(replaceType => {
       replaceType.forEach(replace => {
         ['to', 'from', 'includes'].forEach(type => {
-          if (replace[type] && !Blueprint.getEntityData()[bp.jsName(replace[type].replace('includes:', ''))]) newEntityData[bp.jsName(
-            replace[type].replace('includes:', ''))] = { type: 'item' };
+          if (
+            replace[type] &&
+            !Blueprint.getEntityData()[
+              bp.jsName(replace[type].replace('includes:', ''))
+            ]
+          )
+            newEntityData[bp.jsName(replace[type].replace('includes:', ''))] = {
+              type: 'item',
+            };
         });
       });
     });
@@ -43,9 +50,11 @@ module.exports = function(string, opt) {
     Blueprint.setEntityData(newEntityData);
 
     old.entities.forEach(ent => {
-
       ENTITY_REPLACE.forEach(replace => {
-        if (ent.name == bp.jsName(replace.from) || ent.name.includes(bp.jsName(replace.includes))) {
+        if (
+          ent.name == bp.jsName(replace.from) ||
+          ent.name.includes(bp.jsName(replace.includes))
+        ) {
           ent.name = bp.jsName(replace.to);
           ent.changed = true;
         }
@@ -54,7 +63,10 @@ module.exports = function(string, opt) {
 
     old.tiles.forEach(tile => {
       ENTITY_REPLACE.forEach(replace => {
-        if (tile.name == bp.jsName(replace.from) || tile.name.includes(bp.jsName(replace.includes))) {
+        if (
+          tile.name == bp.jsName(replace.from) ||
+          tile.name.includes(bp.jsName(replace.includes))
+        ) {
           tile.name = bp.jsName(replace.to);
           tile.changed = true;
         }
@@ -63,7 +75,10 @@ module.exports = function(string, opt) {
 
     old.entities.forEach(ent => {
       RECIPE_REPLACE.forEach(replace => {
-        if (ent.recipe == bp.jsName(replace.from) || ent.recipe.includes(bp.jsName(replace.includes))) {
+        if (
+          ent.recipe == bp.jsName(replace.from) ||
+          ent.recipe.includes(bp.jsName(replace.includes))
+        ) {
           ent.recipe = bp.jsName(replace.to);
           ent.changed = true;
         }
@@ -74,7 +89,10 @@ module.exports = function(string, opt) {
       if (!ent.modules) return;
       MODULE_REPLACE.forEach(replaceModule => {
         Object.keys(ent.modules).forEach(mod => {
-          if (mod == bp.jsName(replaceModule.from) || mod.includes(bp.jsName(replaceModule.includes))) {
+          if (
+            mod == bp.jsName(replaceModule.from) ||
+            mod.includes(bp.jsName(replaceModule.includes))
+          ) {
             const to = bp.jsName(replaceModule.to);
             if (ent.modules[to]) ent.modules[to] += ent.modules[mod];
             else ent.modules[to] = ent.modules[mod];
@@ -92,7 +110,8 @@ module.exports = function(string, opt) {
         obj[ent.name] = { type: 'item' };
         Blueprint.setEntityData(obj);
       }
-      if (ent.changed || !MODIFIED_ONLY) bp.createEntityWithData(ent.getData(), true, true, true); // Allow overlap in case modded items with unknown size
+      if (ent.changed || !MODIFIED_ONLY)
+        bp.createEntityWithData(ent.getData(), true, true, true); // Allow overlap in case modded items with unknown size
     });
 
     bp.entities.forEach(ent => {
@@ -103,6 +122,37 @@ module.exports = function(string, opt) {
       if (tile.changed || !MODIFIED_ONLY) bp.createTileWithData(tile.getData());
     });
 
+    // DIR = 'x' | 'y'
+    const flip = (DIR, MAP, CURVED_MAP) => {
+      bp.entities.forEach(e => {
+        e.position[DIR] = -e.position[DIR] - e.size[DIR];
+
+        if (e.name == 'curved_rail' && CURVED_MAP[e.direction] !== undefined) {
+          e.direction = CURVED_MAP[e.direction];
+        } else if (e.name != 'curved_rail' && MAP[e.direction] !== undefined) {
+          e.direction = MAP[e.direction];
+        }
+
+        if (e.name.includes('splitter')) {
+          const SWITCH_DIR = {
+            left: 'right',
+            right: 'left',
+          };
+          e.setInputPriority(SWITCH_DIR[e.inputPriority] || undefined);
+          e.setOutputPriority(SWITCH_DIR[e.outputPriority] || undefined);
+        }
+      });
+      bp.tiles.forEach(e => {
+        e.position[DIR] = -e.position[DIR] - 1;
+      });
+
+      bp.fixCenter({
+        // In case of tracks
+        x: DIR === 'x' ? 1 : 0,
+        y: DIR === 'y' ? 1 : 0,
+      });
+    };
+
     if (FLIP_X) {
       const MAP = {
         2: 6,
@@ -112,7 +162,7 @@ module.exports = function(string, opt) {
         7: 1,
 
         3: 5,
-        5: 3
+        5: 3,
       };
       const CURVED_MAP = {
         5: 4,
@@ -125,21 +175,9 @@ module.exports = function(string, opt) {
         2: 7,
 
         3: 6,
-        6: 3
+        6: 3,
       };
-      bp.entities.forEach(e => {
-        /*if (e.name == 'train_stop') {
-          e.position.x = -e.position.x + e.size.x;
-          return;
-        }*/
-        e.position.x = -e.position.x - e.size.x;
-        if (e.name == 'curved_rail' && CURVED_MAP[e.direction] !== undefined) e.direction = CURVED_MAP[e.direction];
-        else if (e.name != 'curved_rail' && MAP[e.direction] !== undefined) e.direction = MAP[e.direction];
-      });
-      bp.tiles.forEach(e => {
-        e.position.x = -e.position.x - 1;
-      });
-      bp.fixCenter({ x: 1, y: 0 }); // In case of tracks
+      flip('x', MAP, CURVED_MAP);
     }
 
     if (FLIP_Y) {
@@ -151,7 +189,7 @@ module.exports = function(string, opt) {
         3: 1,
 
         5: 7,
-        7: 5
+        7: 5,
       };
       const CURVED_MAP = {
         1: 4,
@@ -164,28 +202,21 @@ module.exports = function(string, opt) {
         2: 3,
 
         7: 6,
-        6: 7
+        6: 7,
       };
-      bp.entities.forEach(e => {
-        /*if (e.name == 'train_stop') {
-          e.position.x = -e.position.x + e.size.x;
-          return;
-        }*/
-        e.position.y = -e.position.y - e.size.y;
-        if (e.name == 'curved_rail' && CURVED_MAP[e.direction] !== undefined) e.direction = CURVED_MAP[e.direction];
-        else if (e.name != 'curved_rail' && MAP[e.direction] !== undefined) e.direction = MAP[e.direction];
-      });
-      bp.tiles.forEach(e => {
-        e.position.y = -e.position.y - 1;
-      });
-      bp.fixCenter({ x: 0, y: 1 }); // In case of tracks
+      flip('y', MAP, CURVED_MAP);
     }
+
     if (LANDFILL_ENTITIES) {
       bp.entities.forEach(e => {
-        if (e.name !== 'offshore_pump') { // offshore pumps are built on water
+        if (e.name !== 'offshore_pump') {
+          // offshore pumps are built on water
           for (let ox = 0; ox < e.size.x; ox++) {
             for (let oy = 0; oy < e.size.y; oy++) {
-              bp.createTile('landfill', { x: e.position.x + ox, y: e.position.y + oy });
+              bp.createTile('landfill', {
+                x: e.position.x + ox,
+                y: e.position.y + oy,
+              });
             }
           }
         }
@@ -197,4 +228,4 @@ module.exports = function(string, opt) {
   } else {
     return newBP[0].encode();
   }
-}
+};
