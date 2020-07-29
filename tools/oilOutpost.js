@@ -87,7 +87,7 @@ module.exports = function(string, opt = {}) {
   if (CONCRETE) newEntityData[CONCRETE] = { type: 'tile' }
   if (BORDER_CONCRETE && !newEntityData[BORDER_CONCRETE]) newEntityData[BORDER_CONCRETE] = { type: 'tile' }
   if (TRACK_CONCRETE && !newEntityData[TRACK_CONCRETE]) newEntityData[TRACK_CONCRETE] = { type: 'tile' }
-  if (PUMPJACK_NAME && !newEntityData[PUMPJACK_NAME]) newEntityData[PUMPJACK_NAME] = { type: 'entity', width: 3, height: 3 }
+  if (PUMPJACK_NAME && !newEntityData[PUMPJACK_NAME]) newEntityData[PUMPJACK_NAME] = { type: 'item', width: 3, height: 3 }
   Blueprint.setEntityData(newEntityData);
 
   function getPumpjackOutput(pumpjack) {
