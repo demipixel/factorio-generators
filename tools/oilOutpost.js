@@ -109,6 +109,9 @@ module.exports = function(string, opt = {}) {
   const templateBp = new Blueprint(string);
   let bp = new Blueprint();
 
+  const center = templateBp.center();
+  templateBp.fixCenter({ x: center.x - (center.x % 2), y: center.y - (center.y % 2)})
+
   bp.placeBlueprint(templateBp, { x: 0, y: 0 }, (4 - ROTATE_ALL) % 4);
 
   if (FLIP_ALL) {
