@@ -23,6 +23,8 @@ module.exports = function(string, opt) {
 
     const bp = new Blueprint(null, { checkWithEntityData: false });
     bp.name = old.name;
+    bp.version = old.version;
+    bp.icons = old.icons;
     newBP.push(bp);
 
     const newEntityData = {};
