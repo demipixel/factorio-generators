@@ -3,8 +3,8 @@ module.exports = function(bp) {
 
   if (firstRail) {
     let { x, y } = firstRail.position;
-    x += 0.5;
-    y += 0.5;
+    x -= 0.5;
+    y -= 0.5;
     if (x < 0) x += Math.ceil(-x / 2) * 2;
     if (y < 0) y += Math.ceil(-y / 2) * 2;
     x %= 2;
