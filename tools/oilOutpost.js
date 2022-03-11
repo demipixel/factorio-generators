@@ -342,9 +342,14 @@ module.exports = function(string, opt = {}) {
         const pos = { x: target.x + 1 + j * 3, y: target.y + CONNECT_OFFSET + i * 7 };
         bp.createEntity('storage_tank', pos, ((TANKS - j) % 2 == 0) ^ FLIP_ALL ? 2 : 0, true);
         upperY = Math.max(upperY, pos.y + 3); // +3 for size of storage_tank
-        if (i == 0 && j == TANKS - 1) {
+        if (INCLUDE_RADAR && i == 0 && j == TANKS - 1) {
           bp.createEntity('radar', { x: pos.x, y: pos.y - 3 });
-          bp.createEntity('medium_electric_pole', { x: pos.x - 1, y: pos.y - 1 });
+          for (let i = 0; i < 5; i++) {
+            try {
+              bp.createEntity('medium_electric_pole', { x: pos.x - 1, y: pos.y - 1 - i });
+              break;
+            } catch (e) {}
+          }
         }
       }
     }
