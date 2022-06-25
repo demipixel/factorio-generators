@@ -1,4 +1,5 @@
 const Blueprint = require('factorio-blueprint');
+const generateLandfill = require('./lib/landfill');
 module.exports = function(string, opt) {
   opt = opt || {};
 
@@ -211,17 +212,7 @@ module.exports = function(string, opt) {
 
     if (LANDFILL_ENTITIES) {
       bp.entities.forEach(e => {
-        if (e.name !== 'offshore_pump') {
-          // offshore pumps are built on water
-          for (let ox = 0; ox < e.size.x; ox++) {
-            for (let oy = 0; oy < e.size.y; oy++) {
-              bp.createTile('landfill', {
-                x: e.position.x + ox,
-                y: e.position.y + oy,
-              });
-            }
-          }
-        }
+        generateLandfill(e, bp);
       });
     }
   }
