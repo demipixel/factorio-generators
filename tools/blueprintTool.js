@@ -21,6 +21,10 @@ module.exports = function(string, opt) {
   }
   for (let blueprintIndex in blueprints) {
     let old = blueprints[blueprintIndex];
+    if (!old) {
+      newBP.push(null);
+      continue;
+    }
 
     const bp = new Blueprint(null, { checkWithEntityData: false });
     bp.name = old.name;
