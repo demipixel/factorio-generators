@@ -34,7 +34,8 @@ function getSpecialLandfillOffsets(entity) {
 
 function generateLandfill(e, bp) {
   // offshore pumps are built on water, so don't create landfill for them
-  if (e.name === 'offshore_pump') {
+  // stone walls are weaker than just keeping the water
+  if (e.name === 'offshore_pump' || e.name === 'stone_wall') {
     return;
   }
 
