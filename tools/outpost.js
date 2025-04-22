@@ -74,6 +74,7 @@ module.exports = function(string, opt = {}) {
   const USE_FILTER_INSERTER = opt.useFilterInserters != undefined ? !!opt.useFilterInserters : true;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
   const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : false;
+  const MINER_SIZE = opt.minerSize || 3;
 
   // Defenses
   const TURRETS_ENABLED = opt.turrets != undefined ? opt.turrets : true;
@@ -170,7 +171,6 @@ module.exports = function(string, opt = {}) {
 
   const bp = new Blueprint();
 
-  const MINER_SIZE = 3;
   const Y_SIZE = (MINER_SIZE + SPACE_BETWEEN_MINERS) * 2;
   const X_SIZE = MINER_SIZE * 2 + (COMPACT ? 1 : 2);
 
