@@ -10,6 +10,8 @@
 Generates an outpost given a blueprintString with 2 walls at the corner of the ore patch you want to cover. Options are:
 
 - minerSpace: 0-2, space between miners (default 1)
+- minerSize: 3-5, width/length of a miner (default 3)
+- miningDrillName: String, custom mining drill name (default electric_mining_drill)
 - undergroundBelts: Use underground belts in front of miners instead of regular belts
 - compact: No horizontal spacing between miners, place electric poles in between miners. Requires `undergroundBelts` to be `true`.
 - beltName: Name of type of belt in the format `type` or `type_transport_belt` (default `''` which is yellow belt)
