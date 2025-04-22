@@ -20,12 +20,22 @@ const options = [
     },
     {
         name: 'beacons',
-        description: 'Booleann, whether to use beacons (default false)'
+        description: 'Boolean, whether to use beacons (default false)'
     },
     {
         name: 'minerSpace',
         alias: 'miner',
         description: '0-2, space between miners (default 1)'
+    },
+    {
+        name: 'minerSize',
+        alias: 'size',
+        description: '3-5, width/length of a miner (default 3)'
+    },
+    {
+        name: 'miningDrillName',
+        alias: 'drillName',
+        description: 'String, custom mining drill name (default electric_mining_drill)'
     },
     {
         name: 'includeRadar',
