@@ -118,7 +118,7 @@ module.exports = function(string, opt = {}) {
   newEntityData[BELT_NAME + 'splitter'] = { type: 'item', width: 2, height: 1 };
   newEntityData[BELT_NAME + 'underground_belt'] = { type: 'item', width: 1, height: 1, directionType: true };
 
-  newEntityData[MINING_DRILL_NAME] = { type: 'item', width: 3, height: 3 };
+  newEntityData[MINING_DRILL_NAME] = { type: 'item', width: MINER_SIZE, height: MINER_SIZE };
 
   if (CONCRETE) newEntityData[CONCRETE] = { type: 'tile' }
   if (BORDER_CONCRETE && !newEntityData[BORDER_CONCRETE]) newEntityData[BORDER_CONCRETE] = { type: 'tile' }
