@@ -74,7 +74,7 @@ module.exports = function(string, opt = {}) {
   const USE_FILTER_INSERTER = opt.useFilterInserters != undefined ? !!opt.useFilterInserters : true;
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
   const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : false;
-  const MINER_SIZE = opt.minerSize || 3;
+  const MINER_SIZE = useOrDefault(opt.minerSize, 3);
 
   // Defenses
   const TURRETS_ENABLED = opt.turrets != undefined ? opt.turrets : true;
