@@ -1,5 +1,6 @@
 const Blueprint = require('factorio-blueprint');
 const generateLandfill = require('./lib/landfill');
+const blueprintTool2 = require('./lib/blueprintTool2');
 module.exports = function(string, opt) {
   opt = opt || {};
 
@@ -10,6 +11,10 @@ module.exports = function(string, opt) {
   const RECIPE_REPLACE = opt.recipeReplace || [];
   const MODULE_REPLACE = opt.moduleReplace || [];
   const MODIFIED_ONLY = opt.modifiedOnly || false;
+
+  // Blueprints made in Factorio 2.0 hold data factorio-blueprint would lose
+  const raw = Blueprint.test(string);
+  if (blueprintTool2.isFactorio2(raw)) return blueprintTool2(raw, opt);
 
   let blueprints = [new Blueprint(string, { checkWithEntityData: false })];
   let newBP = [];
@@ -82,9 +87,10 @@ module.exports = function(string, opt) {
 
     old.entities.forEach(ent => {
       RECIPE_REPLACE.forEach(replace => {
+        if (!ent.recipe) return;
         if (
           ent.recipe == bp.jsName(replace.from) ||
-          ent.recipe.includes(bp.jsName(replace.includes))
+          (replace.includes && ent.recipe.includes(bp.jsName(replace.includes)))
         ) {
           ent.recipe = bp.jsName(replace.to);
           ent.changed = true;

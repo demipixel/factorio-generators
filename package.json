@@ -1,18 +1,38 @@
 {
   "name": "factorio-generators",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "Generators for Factorio blueprints: ore and oil outposts with train stations and defenses, and a blueprint tool.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test test/*.test.js",
+    "test:ingame": "node test/ingame/run.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "a-star": "git+https://github.com/andrewrk/node-astar.git",
-    "factorio-blueprint": "^2.6.5",
+    "factorio-blueprint": "^2.7.0",
     "meow": "^3.7.0",
     "victor": "^1.1.0",
     "yamljs": "^0.2.10"
+  },
+  "files": [
+    "index.js",
+    "tools",
+    "cli",
+    "cliRequesterChest",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/demipixel/factorio-generators.git"
+  },
+  "keywords": [
+    "factorio",
+    "blueprint",
+    "generator",
+    "outpost"
+  ],
+  "engines": {
+    "node": ">=18"
   }
 }
