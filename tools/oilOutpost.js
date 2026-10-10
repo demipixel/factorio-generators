@@ -1,5 +1,4 @@
 const Blueprint = require('factorio-blueprint');
-const aStar = require('a-star');
 const Victor = require('victor');
 
 const generateDefenses = require('./lib/defenses');
@@ -10,6 +9,7 @@ const fitRailsToWalls = require('./lib/fitRails');
 const powerEverything = require('./lib/power');
 const clearForStop = require('./lib/clearForStop');
 const addBeacons = require('./lib/addBeacons');
+const layPipes = require('./lib/pipes');
 
 const PUMPJACK_EXIT_DIRECTION = {
   0: { x: 2, y: -1 },
@@ -58,6 +58,12 @@ module.exports = function(string, opt = {}) {
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
   const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : false;
   const TANKS = useOrDefault(opt.tanks, 2);
+  // The shortest straight run of pipe that goes underground, and what a turn costs when the pipes are routed
+  const UNDERGROUND = { none: { from: Infinity, turnCost: 0.05 }, long: { from: 6, turnCost: 0.2 }, all: { from: 3, turnCost: 0.35 } };
+  const UNDERGROUND_PIPES = opt.undergroundPipes == undefined ? 'all' : opt.undergroundPipes;
+  if (!UNDERGROUND[UNDERGROUND_PIPES]) {
+    throw new Error('opt.undergroundPipes must be one of: ' + Object.keys(UNDERGROUND).join(', '));
+  }
   // false, or how many: 'few', 'balanced' (what true gives) or 'max'
   const BEACONS = opt.beacons === true || opt.beacons === 'true' ? 'balanced' : (opt.beacons && opt.beacons !== 'false' ? opt.beacons : false);
   if (BEACONS && addBeacons.DENSITIES.indexOf(BEACONS) == -1) {
@@ -173,87 +179,18 @@ module.exports = function(string, opt = {}) {
   target.x += -(target.x % 2) + alignment.x
   target.y += -(target.y % 2) + alignment.y;
 
-  bp.entities.filter(ent => ent.name == PUMPJACK_NAME).forEach(pumpjack => {
-    let powered = false;
-    bp.entities.filter(ent => ent.name == 'medium_electric_pole').forEach(pole => {
-      if (powered) return;
-      if ((pole.position.x - pumpjack.position.x <= 5) &&
-        (pole.position.y - pumpjack.position.y <= 5) &&
-        (pumpjack.position.x - pole.position.x <= 3) &&
-        (pumpjack.position.y - pole.position.y <= 3)) {
-        powered = true;
-      }
-    });
-    if (powered) return;
-
-    const output = getPumpjackOutput(pumpjack);
-    const electricPoleLocations = [];
-    for (let x = -1; x <= 3; x++) {
-      for (let y = -1; y <= 3; y++) {
-        if (x != -1 && x != 3 && y != -1 && y != 3) continue; // Only on edges
-        const pos = { x: x + pumpjack.position.x, y: y + pumpjack.position.y }
-        if (pos.x == output.x && pos.y == output.y) continue;
-        if (x == output.x || y == output.y) electricPoleLocations.push(pos);
-        else electricPoleLocations.unshift(pos);
-      }
-    }
-    for (let i = 0; i < electricPoleLocations.length; i++) {
-      const x = electricPoleLocations[i].x;
-      const y = electricPoleLocations[i].y;
-      if (bp.findEntity({ x, y })) continue;
-      let blocking = false;
-      SIDES.forEach(side => {
-        const ent = bp.findEntity({ x: x + side.x, y: y + side.y });
-        if (!ent || ent.name != PUMPJACK_NAME) return;
-        const otherOutput = getPumpjackOutput(ent);
-        if (otherOutput.x == x && otherOutput.y == y) blocking = true;
-      });
-      if (!blocking) {
-        bp.createEntity('medium_electric_pole', { x, y });
-        break;
-      }
-    }
-  });
-
-  bp.entities.filter(ent => ent.name == PUMPJACK_NAME).forEach(pumpjack => {
-    if (bp.findEntity(getPumpjackOutput(pumpjack))) return;
-    // if (bp.findEntity(getPumpjackOutput(pumpjack))) bp.findEntity(getPumpjackOutput(pumpjack)).remove();
-    const result = aStar({
-      start: getPumpjackOutput(pumpjack),
-      isEnd: (node) => {
-        if (node.x == target.x && node.y == target.y) return true;
-        for (let i = 0; i < SIDES.length; i++) {
-          const entity = bp.findEntity(node.clone().add(SIDES[i]));
-          if (entity && entity.name == 'pipe') {
-            return true;
-          }
-        }
-        return false;
-      },
-      neighbor: (node) => {
-        return SIDES.map(side => node.clone().add(side))
-          .filter(pos => !bp.findEntity(pos))
-          .filter(pos => pos.x <= target.x);
-      },
-      distance: (nodeA, nodeB) => {
-        return Math.abs(nodeA.x - nodeB.x) * 0.98 + Math.abs(nodeA.y - nodeB.y);
-      },
-      heuristic: (node) => {
-        return 0; //Math.abs(node.x - target.x) + Math.abs(node.y - target.y);
-      },
-      hash: (node) => {
-        return node.x + ',' + node.y
-      },
-      timeout: 5000
-    });
-    if (result.status != 'success') {
-      if (result.status == 'noPath') throw new Error('Could not create path for all pipes!');
-      else throw new Error('Took too long to generate pipe paths!');
-    }
-    result.path.forEach(pos => {
-      if (bp.findEntity(pos)) bp.findEntity(pos).remove();
-      bp.createEntity('pipe', pos, 0, true);
-    });
+  const pumpjacks = bp.entities.filter(ent => ent.name == PUMPJACK_NAME);
+  const PIPE_MARGIN = 4; // how far around the pumpjacks a pipe may go
+  layPipes(bp, {
+    outputs: pumpjacks.map(getPumpjackOutput),
+    trunk: target,
+    area: {
+      left: bp.topLeft().x - PIPE_MARGIN,
+      right: target.x,
+      top: Math.min(bp.topLeft().y, target.y) - PIPE_MARGIN,
+      bottom: Math.max(bp.bottomLeft().y, target.y) + PIPE_MARGIN
+    },
+    turnCost: UNDERGROUND[UNDERGROUND_PIPES].turnCost
   });
 
   function simplifyPipes(bp, start, minLength = 3) {
@@ -309,9 +246,21 @@ module.exports = function(string, opt = {}) {
     });
   }
 
-  simplifyPipes(bp, target);
+  if (UNDERGROUND[UNDERGROUND_PIPES].from != Infinity) simplifyPipes(bp, target, UNDERGROUND[UNDERGROUND_PIPES].from);
 
   if (BEACONS) addBeacons(bp, { pumpjackName: PUMPJACK_NAME, density: BEACONS, maxX: target.x });
+
+  // Pumpjacks and beacons get their poles now, while the tiles around them
+  // are free and before the walls are measured out. Where a beacon leaves no
+  // room for a pole, the beacon goes.
+  for (;;) {
+    const dark = powerEverything.cover(bp, { alsoPowered: [PUMPJACK_NAME], allowed: position => position.x < target.x });
+    if (!dark.length) break;
+    const beacons = bp.entities.filter(ent => ent.name == 'beacon');
+    if (!beacons.length) break;
+    const apart = beacon => Math.abs(beacon.position.x - dark[0].position.x) + Math.abs(beacon.position.y - dark[0].position.y);
+    bp.removeEntity(beacons.reduce((nearest, beacon) => (apart(beacon) < apart(nearest) ? beacon : nearest)));
+  }
 
   const lowerX = bp.topLeft().x;
   let upperY = bp.bottomLeft().y;

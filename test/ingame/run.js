@@ -8,6 +8,7 @@
 //   - whether the train stop and the rail signal attach to the track
 //   - whether all the poles end up in one electric network, and everything electric is in reach of one
 //   - whether every beacon reaches a pumpjack
+//   - whether the pipes join every pumpjack and tank
 //   - whether our 2.0 output equals what the game makes of the 1.1 string
 //
 // Nothing is written to your own Factorio folders; the run uses its own
@@ -59,7 +60,7 @@ ORIENTATIONS.forEach(([trainSide, trainDirection], n) => {
   const opt = {
     trainSide, trainDirection, turrets: true, laserTurrets: n % 2 === 0, includeLights: true,
     exitRoute: n % 3 === 0, module: n % 2 ? 'speed_module' : null, wagonCount: 1 + (n % 3), tanks: 1 + (n % 4),
-    beacons: [false, 'few', 'balanced', 'max'][n % 4]
+    beacons: [false, 'few', 'balanced', 'max'][n % 4], undergroundPipes: ['all', 'long', 'none'][n % 3]
   };
   const i = cases.length;
   cases.push({ opt, about: 'oil outpost' });
@@ -85,6 +86,7 @@ const sound = r => r.import === 0 &&
   r.networks <= 1 &&
   Object.keys(r.unpowered).length === 0 &&
   r.useless_beacons === 0 &&
+  r.cut_off === 0 &&
   Object.values(r.stop_connected).every(Boolean) &&
   Object.values(r.signal_rails).every(rails => rails > 0);
 const fingerprint = e => JSON.stringify([
@@ -106,7 +108,7 @@ cases.forEach(({ opt, about }, i) => {
   [['1.1', before], ['2.0', after]].forEach(([label, r]) => console.log(
     `  ${label}: import ${r.import}, placed ${r.placed}/${r.entity_count}, refused ${JSON.stringify(r.refused)}, lost ${JSON.stringify(r.lost)}, ` +
     `stop on track ${JSON.stringify(r.stop_connected)}, rails at signal ${JSON.stringify(r.signal_rails)}, ` +
-    `electric networks ${r.networks}, without power ${JSON.stringify(r.unpowered)}, beacons reaching nothing ${r.useless_beacons}`));
+    `electric networks ${r.networks}, without power ${JSON.stringify(r.unpowered)}, beacons reaching nothing ${r.useless_beacons}, pumpjacks and tanks cut off from the pipes ${r.cut_off}`));
   if (!same) console.log('  the 2.0 output differs from the game\'s conversion of the 1.1 output');
 });
 

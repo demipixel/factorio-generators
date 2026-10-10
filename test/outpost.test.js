@@ -103,8 +103,9 @@ test('nothing overlaps, everything has power, and all the poles can be wired int
   }
   ORIENTATIONS.forEach(([trainSide, trainDirection], n) => {
     const beacons = [false, 'few', 'balanced', 'max'][n % 4];
-    const about = `oil outpost, side ${trainSide}, direction ${trainDirection}, beacons ${beacons}`;
-    const bp = new Blueprint(oilOutpost(oilField(), { trainSide, trainDirection, beacons, gameVersion: '1.1' }));
+    const undergroundPipes = ['all', 'long', 'none'][n % 3];
+    const about = `oil outpost, side ${trainSide}, direction ${trainDirection}, beacons ${beacons}, underground pipes ${undergroundPipes}`;
+    const bp = new Blueprint(oilOutpost(oilField(), { trainSide, trainDirection, beacons, undergroundPipes, gameVersion: '1.1' }));
     assert.deepStrictEqual(overlaps(bp), [], `on the same tile: ${about}`);
     assert.deepStrictEqual(unpowered(bp), [], `without power: ${about}`);
     assert.strictEqual(networks(bp), 1, `networks: ${about}`);
@@ -135,6 +136,20 @@ test('beacons spread over the pumpjacks, and the setting decides how many', () =
   assert.ok(counts[0] > 0 && counts[0] <= counts[1] && counts[1] < counts[2], `few, balanced, max gave ${counts}`);
   assert.strictEqual(named(build(true), 'beacon').length, counts[1], 'true means balanced');
   assert.throws(() => build('plenty'), /opt\.beacons/);
+});
+
+test('how much pipe goes underground follows the setting', () => {
+  // one wagon: with more, the station itself ducks a pipe under each pump
+  const count = (undergroundPipes, name) =>
+    new Blueprint(oilOutpost(oilField(), { undergroundPipes, wagonCount: 1, gameVersion: '1.1' }))
+      .entities.filter(e => e.name === name).length;
+  assert.strictEqual(count('none', 'pipe_to_ground'), 0);
+  assert.ok(count('long', 'pipe_to_ground') > 0, 'long runs go underground');
+  assert.ok(count('long', 'pipe_to_ground') <= count('all', 'pipe_to_ground'));
+  assert.ok(count('all', 'pipe') < count('long', 'pipe') && count('long', 'pipe') < count('none', 'pipe'),
+    'the more goes underground, the less pipe is left on the surface');
+  assert.strictEqual(count(undefined, 'pipe_to_ground'), count('all', 'pipe_to_ground'), 'all is the default');
+  assert.throws(() => count('some'), /opt\.undergroundPipes/);
 });
 
 test('an outpost without a station keeps no room for one', () => {

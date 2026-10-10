@@ -28,11 +28,11 @@ function supplies(position, size, reach, ent) {
 }
 
 // Remembers which tiles a new pole may stand on
-function freeTiles(bp, keepFree) {
+function freeTiles(bp, keepFree, allowed) {
   const known = {};
   keepFree.forEach(position => (known[position.x + ',' + position.y] = false));
   const check = ({ x, y }) => {
-    if (bp.findEntity({ x, y })) return false;
+    if (bp.findEntity({ x, y }) || (allowed && !allowed({ x, y }))) return false;
     for (let dx = -1; dx <= 1; dx++) {
       for (let dy = -1; dy <= 1; dy++) {
         const neighbour = bp.findEntity({ x: x + dx, y: y + dy });
@@ -80,12 +80,13 @@ function coverEverything(bp, poles, isFree, alsoPowered) {
       const tile = tiles[key];
       if (tile && (!best || tile.count > best.count || (tile.count == best.count && tile.apart < best.apart))) best = tile;
     });
-    if (!best) return; // nowhere left to stand a pole
+    if (!best) return dark; // nowhere left to stand a pole
 
     const pole = isFree.placePole(best.position);
     poles.push(pole);
     dark = dark.filter(ent => !supplies(pole.position, pole.size, reach, ent));
   }
+  return dark;
 }
 
 function groupsOf(poles) {
@@ -167,11 +168,19 @@ function joinNetworks(bp, poles, isFree) {
 }
 
 // alsoPowered: names of entities that need power but do not look like it,
-// such as a modded drill. keepFree: tiles no pole may stand on.
-module.exports = function(bp, { alsoPowered = [], keepFree = [] } = {}) {
+// such as a modded drill. keepFree: tiles no pole may stand on. allowed: a
+// say in which tiles a pole may stand on.
+module.exports = function(bp, { alsoPowered = [], keepFree = [], allowed } = {}) {
   const poles = bp.entities.filter(ent => wireReachOf(ent));
-  const isFree = freeTiles(bp, keepFree);
+  const isFree = freeTiles(bp, keepFree, allowed);
 
   coverEverything(bp, poles, isFree, alsoPowered);
   joinNetworks(bp, poles, isFree);
+};
+
+// Only the first step. Returns what is still without power, which is
+// nothing unless there was no tile left for a pole.
+module.exports.cover = function(bp, { alsoPowered = [], keepFree = [], allowed } = {}) {
+  const poles = bp.entities.filter(ent => wireReachOf(ent));
+  return coverEverything(bp, poles, freeTiles(bp, keepFree, allowed), alsoPowered);
 };

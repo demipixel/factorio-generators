@@ -153,6 +153,32 @@ script.on_init(function()
       end
       result.unpowered = unpowered
       result.useless_beacons = useless_beacons
+      -- every pumpjack has to be piped to the same network as the tanks:
+      -- walk the pipes from one of them and see which are never reached
+      local oil = {}
+      for _, entity in pairs(surface.find_entities_filtered({ type = { "mining-drill", "storage-tank" } })) do
+        if #entity.fluidbox > 0 then oil[#oil + 1] = entity end
+      end
+      local reached = {}
+      local queue = { oil[1] }
+      if oil[1] then reached[oil[1].unit_number] = true end
+      while #queue > 0 do
+        local entity = table.remove(queue)
+        for index = 1, #entity.fluidbox do
+          for _, other in pairs(entity.fluidbox.get_connections(index)) do
+            local owner = other.owner
+            if not reached[owner.unit_number] then
+              reached[owner.unit_number] = true
+              queue[#queue + 1] = owner
+            end
+          end
+        end
+      end
+      local cut_off = 0
+      for _, entity in pairs(oil) do
+        if not reached[entity.unit_number] then cut_off = cut_off + 1 end
+      end
+      result.cut_off = cut_off
       local signals = {}
       for _, signal in pairs(surface.find_entities_filtered({ type = "rail-signal" })) do
         signals[#signals + 1] = #signal.get_connected_rails()

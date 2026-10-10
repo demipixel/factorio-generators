@@ -56,6 +56,7 @@ Shares options with the "shared" section from above
 
 - pumpjackName: String, Name of pumpjack entity (default: `'pumpjack'`)
 - tanks: Int, Number of tanks to use to store oil per cargo wagon (default: `2`)
+- undergroundPipes: how much of the pipe goes underground: `'none'`, `'long'` (straight runs of 6 tiles or more) or `'all'` (runs of 3 or more). The more goes underground, the more the pipes are routed in straight lines (default `'all'`)
 - beacons: `false`, or how many beacons to place around the pumpjacks: `'few'`, `'balanced'` or `'max'` (`true` means `'balanced'`). Each beacon holds two speed module 3. They go where they add the most under Factorio 2.0's rule that every extra beacon on a machine counts for less, on the tiles the pipes leave free (default `false`)
 
 ### blueprintTool(blueprintString, opt)
