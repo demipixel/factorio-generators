@@ -2,6 +2,9 @@ const Blueprint = require('factorio-blueprint');
 const generateDefenses = require('./lib/defenses');
 const generateTrainStation = require('./lib/trainStation');
 const fixRail = require('./lib/fixRail');
+const { encode } = require('./lib/factorio2');
+const fitRailsToWalls = require('./lib/fitRails');
+const connectPoles = require('./lib/connectPoles');
 
 
 const BALANCER = {
@@ -255,18 +258,27 @@ module.exports = function(string, opt = {}) {
           }
         } 
       } else {
-        const pos = { x: OFFSET_X + 3, y: OFFSET_Y + MINER_SIZE - 1 };
-        bp.createEntity('medium_electric_pole', pos);
-        if (INCLUDE_LIGHTS) {
-          const lpos = { x: OFFSET_X + 3, y: OFFSET_Y + MINER_SIZE };
-          bp.createEntity('small_lamp', lpos);
-        }
-        if (NEED_ADDITIONAL_POLES) {
-          bp.createEntity('medium_electric_pole', { x: pos.x, y: pos.y + 5 });
-          if (INCLUDE_LIGHTS) {
-            bp.createEntity('small_lamp', { x: pos.x, y: pos.y + 6 });
+        // Compact: poles go in the belt column, in the free tiles between an
+        // underground belt's entrance and its exit. Each pair of miners has one such gap.
+        const column = OFFSET_X + MINER_SIZE;
+        const pairSpacing = MINER_SIZE + SPACE_BETWEEN_MINERS;
+        const placePole = (poleY, firstFreeY, lastFreeY) => {
+          if (poleY < firstFreeY || poleY > lastFreeY) return;
+          bp.createEntity('medium_electric_pole', { x: column, y: poleY });
+          if (INCLUDE_LIGHTS && poleY + 1 <= lastFreeY) {
+            bp.createEntity('small_lamp', { x: column, y: poleY + 1 });
           }
-        } 
+        };
+
+        // First pair: entrance at +1, exit at +pairSpacing
+        placePole(OFFSET_Y + MINER_SIZE - 1, OFFSET_Y + 2, OFFSET_Y + pairSpacing - 1);
+
+        if (NEED_ADDITIONAL_POLES) {
+          // Second pair: entrance at +pairSpacing + 1. Its exit is pulled in on the last row.
+          const entrance = OFFSET_Y + pairSpacing + 1;
+          const exit = OFFSET_Y + pairSpacing * 2 - (y == Y_LENGTH - 1 ? SPACE_BETWEEN_MINERS + 1 : 0);
+          placePole(Math.min(OFFSET_Y + pairSpacing + MINER_SIZE - 1, exit - 1), entrance + 1, exit - 1);
+        }
       }
 
       if (MODULE) {
@@ -515,10 +527,19 @@ module.exports = function(string, opt = {}) {
   // Place walls and laser turrets
 
   const lowerX = -2;
-  const upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS +1 : 0) + ADDITIONAL_SPACE;
-
   const lowerY = Math.min(INCLUDE_RADAR ? -3 : 0, trainStopLocation.y - (SINGLE_HEADED_TRAIN ? Math.max(0, trainStopLocation.y) : 0)) - 1;
-  const upperY = Y_LENGTH * Y_SIZE + Math.max(LOADING_BAYS, X_LENGTH) + (SINGLE_HEADED_TRAIN ? 0 : LOCOMOTIVES * 7) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
+  let upperX, upperY;
+
+  if (INCLUDE_TRAIN_STATION) {
+    upperX = trainStopLocation.x + 2 + (ROBOPORTS ? 4 : 0) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS +1 : 0) + ADDITIONAL_SPACE;
+    upperY = Y_LENGTH * Y_SIZE + Math.max(LOADING_BAYS, X_LENGTH) + (SINGLE_HEADED_TRAIN ? 0 : LOCOMOTIVES * 7) + (LOAD_FROM_BOTH_SIDES ? LOADING_BAYS : 0);
+
+    fitRailsToWalls(bp, { lowerY, upperY }, { WALL_SPACE, WALL_THICKNESS, SINGLE_HEADED_TRAIN, TRACK_CONCRETE });
+  } else {
+    // No station: don't keep room for one, just wrap what was built
+    upperX = Math.max(...bp.entities.map(e => e.position.x + e.size.x)) + ADDITIONAL_SPACE;
+    upperY = Math.max(...bp.entities.map(e => e.position.y + e.size.y));
+  }
 
   generateDefenses(bp, { lowerX, upperX, lowerY, upperY }, {
     TURRETS_ENABLED,
@@ -531,13 +552,17 @@ module.exports = function(string, opt = {}) {
     INCLUDE_LIGHTS
   }); // Pass in same opt, same names for defenses
 
+  connectPoles(bp);
+
   bp.fixCenter();
   fixRail(bp);
 
   if (TRAIN_SIDE == TRAIN_DIRECTION + 1 || (TRAIN_SIDE == 0 && TRAIN_DIRECTION == 3)) {
     bp.entities.forEach(e => {
-      if (e.name == 'train_stop') {
-        e.position.x = -e.position.x + e.size.x;
+      // The stop and the signal belong on the right-hand side of an arriving train,
+      // so they change sides of the track instead of being mirrored with it
+      if (e.name == 'train_stop' || e.name == 'rail_signal') {
+        e.position.x = -e.position.x + 2;
         return;
       }
       e.position.x = -e.position.x - e.size.x;
@@ -556,5 +581,5 @@ module.exports = function(string, opt = {}) {
   finalBp.placeBlueprint(bp, { x: 0, y: 0 }, (TRAIN_DIRECTION + 2) % 4, true);
   finalBp.name = NAME.replace('%drills%', finalBp.entities.filter(e => e.name == MINING_DRILL_NAME).length);
 
-  return finalBp.encode();
+  return encode(finalBp, opt.gameVersion);
 }

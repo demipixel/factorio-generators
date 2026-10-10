@@ -5,6 +5,9 @@ const Victor = require('victor');
 const generateDefenses = require('./lib/defenses');
 const generateTrainStation = require('./lib/trainStation');
 const fixRail = require('./lib/fixRail');
+const { encode } = require('./lib/factorio2');
+const fitRailsToWalls = require('./lib/fitRails');
+const connectPoles = require('./lib/connectPoles');
 const addBeacons = require('./lib/addBeacons');
 
 const PUMPJACK_EXIT_DIRECTION = {
@@ -372,6 +375,10 @@ module.exports = function(string, opt = {}) {
 
   const upperX = bp.topRight().x + ADDITIONAL_SPACE;
 
+  if (INCLUDE_TRAIN_STATION) {
+    fitRailsToWalls(bp, { lowerY, upperY }, { WALL_SPACE, WALL_THICKNESS, SINGLE_HEADED_TRAIN, TRACK_CONCRETE });
+  }
+
   generateDefenses(bp, { lowerX, upperX, lowerY, upperY }, {
     TURRETS_ENABLED,
     TURRET_SPACING,
@@ -382,6 +389,8 @@ module.exports = function(string, opt = {}) {
     BORDER_CONCRETE,
     INCLUDE_LIGHTS
   });
+
+  connectPoles(bp);
 
   if (MODULE) {
     bp.entities.filter(ent => ent.name == PUMPJACK_NAME).forEach(ent => {
@@ -395,8 +404,10 @@ module.exports = function(string, opt = {}) {
 
   if (FLIP_ALL) {
     bp.entities.forEach(e => {
-      if (e.name == 'train_stop') {
-        e.position.x = -e.position.x + e.size.x;
+      // The stop and the signal belong on the right-hand side of an arriving train,
+      // so they change sides of the track instead of being mirrored with it
+      if (e.name == 'train_stop' || e.name == 'rail_signal') {
+        e.position.x = -e.position.x + 2;
         return;
       }
       e.position.x = -e.position.x - e.size.x;
@@ -417,5 +428,5 @@ module.exports = function(string, opt = {}) {
   finalBp.placeBlueprint(bp, { x: 0, y: 0 }, ROTATE_ALL);
   finalBp.name = NAME.replace('%pumpjacks%', finalBp.entities.filter(e => e.name == PUMPJACK_NAME).length);
 
-  return finalBp.encode();
+  return encode(finalBp, opt.gameVersion);
 }

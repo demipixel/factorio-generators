@@ -20,40 +20,36 @@ module.exports = function(bp, { lowerX, upperX, lowerY, upperY }, { TURRETS_ENAB
     // Try to generate power poles anyway so that they can connect
     if (USE_LASER_TURRETS && placePowerpole) {
       const movePowerpoleBehind = (TURRET_SPACING == 2 ? (upper ? -1 : 2) : 0);
-      try {
-        const OFFSET_Y = isX ? movePowerpoleBehind : -1;
-        const OFFSET_X = isX ? -1 : movePowerpoleBehind;
-        bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
-        if(INCLUDE_LIGHTS){
-          const LX = OFFSET_X + (isX ? 0 : 1);
-          const LY = OFFSET_Y + (isX ? 1 : 0);
-          bp.createEntity('small_lamp', { x: xPosition + LX, y: yPosition + LY });
-        }
-      } catch (e) {
-        const OFFSET_Y = isX ? movePowerpoleBehind : 2;
-        const OFFSET_X = isX ? 2 : movePowerpoleBehind;
-        bp.createEntity('medium_electric_pole', { x: xPosition + OFFSET_X, y: yPosition + OFFSET_Y });
-        if(INCLUDE_LIGHTS){
-          const LX = OFFSET_X + (isX ? 0 : 1);
-          const LY = OFFSET_Y + (isX ? 1 : 0);
-          bp.createEntity('small_lamp', { x: xPosition + LX, y: yPosition + LY });
-        }
-      }
+      // Beside the turret, or on its other side if that is taken. Left out when neither fits.
+      const spots = [
+        { x: isX ? -1 : movePowerpoleBehind, y: isX ? movePowerpoleBehind : -1 },
+        { x: isX ? 2 : movePowerpoleBehind, y: isX ? movePowerpoleBehind : 2 }
+      ];
+      const place = withLamp => spots.some(spot => {
+        const pole = { x: xPosition + spot.x, y: yPosition + spot.y };
+        const lamp = { x: pole.x + (isX ? 0 : 1), y: pole.y + (isX ? 1 : 0) };
+        if (bp.findEntity(pole) || (withLamp && bp.findEntity(lamp))) return false;
+        bp.createEntity('medium_electric_pole', pole);
+        if (withLamp) bp.createEntity('small_lamp', lamp);
+        return true;
+      });
+      if (!place(INCLUDE_LIGHTS) && INCLUDE_LIGHTS) place(false);
     }
   }
 
   if (TURRETS_ENABLED) {
+    // Coordinates can sit on half tiles (the oil outpost does), so count whole tiles
     for (let x = lowerX - WALL_SPACE + 3; x <= upperX + WALL_SPACE - 3; x++) {
-      const placePowerpole = TURRET_SPACING <= 4 ? x % (TURRET_SPACING * 2) == 0 : true;
-      if (x % TURRET_SPACING == 0) {
+      const placePowerpole = TURRET_SPACING <= 4 ? Math.floor(x) % (TURRET_SPACING * 2) == 0 : true;
+      if (Math.floor(x) % TURRET_SPACING == 0) {
         generateTurret(true, x, false, placePowerpole);
         generateTurret(true, x, true, placePowerpole);
       }
     }
 
     for (let y = lowerY - WALL_SPACE + 1 + 3; y < upperY + WALL_SPACE - 3; y++) {
-      const placePowerpole = TURRET_SPACING <= 4 ? y % (TURRET_SPACING * 2) == 0 : true;
-      if (y % TURRET_SPACING == 0) {
+      const placePowerpole = TURRET_SPACING <= 4 ? Math.floor(y) % (TURRET_SPACING * 2) == 0 : true;
+      if (Math.floor(y) % TURRET_SPACING == 0) {
         generateTurret(false, y, false, placePowerpole);
         generateTurret(false, y, true, placePowerpole);
       }
