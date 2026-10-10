@@ -7,7 +7,8 @@ const generateTrainStation = require('./lib/trainStation');
 const fixRail = require('./lib/fixRail');
 const { encode } = require('./lib/factorio2');
 const fitRailsToWalls = require('./lib/fitRails');
-const connectPoles = require('./lib/connectPoles');
+const powerEverything = require('./lib/power');
+const clearForStop = require('./lib/clearForStop');
 const addBeacons = require('./lib/addBeacons');
 
 const PUMPJACK_EXIT_DIRECTION = {
@@ -57,7 +58,11 @@ module.exports = function(string, opt = {}) {
   const INCLUDE_RADAR = opt.includeRadar != undefined ? opt.includeRadar : true;
   const INCLUDE_LIGHTS = opt.includeLights != undefined ? opt.includeLights : false;
   const TANKS = useOrDefault(opt.tanks, 2);
-  const USE_BEACONS = !!opt.beacons;
+  // false, or how many: 'few', 'balanced' (what true gives) or 'max'
+  const BEACONS = opt.beacons === true || opt.beacons === 'true' ? 'balanced' : (opt.beacons && opt.beacons !== 'false' ? opt.beacons : false);
+  if (BEACONS && addBeacons.DENSITIES.indexOf(BEACONS) == -1) {
+    throw new Error('opt.beacons must be true, false, or one of: ' + addBeacons.DENSITIES.join(', '));
+  }
 
   // Defenses
   const TURRETS_ENABLED = opt.turrets != undefined ? opt.turrets : true;
@@ -163,8 +168,6 @@ module.exports = function(string, opt = {}) {
     }
   });
 
-  if (USE_BEACONS) addBeacons(bp, getPumpjackOutput);
-
   let target = new Victor(bp.topRight().x + 1, (bp.topRight().y + bp.bottomRight().y) / 2);
 
   target.x += -(target.x % 2) + alignment.x
@@ -229,19 +232,11 @@ module.exports = function(string, opt = {}) {
       },
       neighbor: (node) => {
         return SIDES.map(side => node.clone().add(side))
-          .filter(pos => !bp.findEntity(pos) || bp.findEntity(pos).name == 'beacon')
+          .filter(pos => !bp.findEntity(pos))
           .filter(pos => pos.x <= target.x);
       },
       distance: (nodeA, nodeB) => {
-        let scale = 1.0;
-        if (USE_BEACONS) {
-          const entityA = bp.findEntity(nodeA);
-          const entityB = bp.findEntity(nodeB);
-          if ((entityA && entityA.name == 'beacon') || (entityB && entityB.name == 'beacon')) {
-            scale = 100;
-          }
-        }
-        return (Math.abs(nodeA.x - nodeB.x) * 0.98 + Math.abs(nodeA.y - nodeB.y)) * scale;
+        return Math.abs(nodeA.x - nodeB.x) * 0.98 + Math.abs(nodeA.y - nodeB.y);
       },
       heuristic: (node) => {
         return 0; //Math.abs(node.x - target.x) + Math.abs(node.y - target.y);
@@ -315,6 +310,8 @@ module.exports = function(string, opt = {}) {
   }
 
   simplifyPipes(bp, target);
+
+  if (BEACONS) addBeacons(bp, { pumpjackName: PUMPJACK_NAME, density: BEACONS, maxX: target.x });
 
   const lowerX = bp.topLeft().x;
   let upperY = bp.bottomLeft().y;
@@ -390,7 +387,7 @@ module.exports = function(string, opt = {}) {
     INCLUDE_LIGHTS
   });
 
-  connectPoles(bp);
+  powerEverything(bp, { alsoPowered: [PUMPJACK_NAME], keepFree: FLIP_ALL ? clearForStop(bp) : [] });
 
   if (MODULE) {
     bp.entities.filter(ent => ent.name == PUMPJACK_NAME).forEach(ent => {

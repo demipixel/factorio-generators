@@ -4,7 +4,8 @@ const generateTrainStation = require('./lib/trainStation');
 const fixRail = require('./lib/fixRail');
 const { encode } = require('./lib/factorio2');
 const fitRailsToWalls = require('./lib/fitRails');
-const connectPoles = require('./lib/connectPoles');
+const powerEverything = require('./lib/power');
+const clearForStop = require('./lib/clearForStop');
 
 
 const BALANCER = {
@@ -552,12 +553,14 @@ module.exports = function(string, opt = {}) {
     INCLUDE_LIGHTS
   }); // Pass in same opt, same names for defenses
 
-  connectPoles(bp);
+  const FLIP_ALL = TRAIN_SIDE == TRAIN_DIRECTION + 1 || (TRAIN_SIDE == 0 && TRAIN_DIRECTION == 3);
+
+  powerEverything(bp, { alsoPowered: [MINING_DRILL_NAME], keepFree: FLIP_ALL ? clearForStop(bp) : [] });
 
   bp.fixCenter();
   fixRail(bp);
 
-  if (TRAIN_SIDE == TRAIN_DIRECTION + 1 || (TRAIN_SIDE == 0 && TRAIN_DIRECTION == 3)) {
+  if (FLIP_ALL) {
     bp.entities.forEach(e => {
       // The stop and the signal belong on the right-hand side of an arriving train,
       // so they change sides of the track instead of being mirrored with it

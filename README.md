@@ -56,6 +56,7 @@ Shares options with the "shared" section from above
 
 - pumpjackName: String, Name of pumpjack entity (default: `'pumpjack'`)
 - tanks: Int, Number of tanks to use to store oil per cargo wagon (default: `2`)
+- beacons: `false`, or how many beacons to place around the pumpjacks: `'few'`, `'balanced'` or `'max'` (`true` means `'balanced'`). Each beacon holds two speed module 3. They go where they add the most under Factorio 2.0's rule that every extra beacon on a machine counts for less, on the tiles the pipes leave free (default `false`)
 
 ### blueprintTool(blueprintString, opt)
 
@@ -71,6 +72,6 @@ Modifies a blueprint in different ways and returns a new blueprint string.
 
 ## Tests
 
-`npm test` generates a few hundred outposts from random settings and checks that every one succeeds, that the track ends at the walls with a gate in each wall row it crosses, that all the poles can be wired into one network, and that the 2.0 output is well formed.
+`npm test` generates a few hundred outposts from random settings and checks that every one succeeds, that the track ends at the walls with a gate in each wall row it crosses, that everything electric is in reach of a pole and all the poles can be wired into one network, and that the 2.0 output is well formed.
 
-`npm run test:ingame` goes further if you have Factorio 2.0 installed: it imports random outposts into the real game (headless, with its own config and a temporary write folder), builds them, and checks that every entity can be placed, that the train stop and rail signal attach to the track, that the outpost is one electric network, and that the 2.0 output equals what the game makes of the 1.1 output. Point it at the game with `FACTORIO=/path/to/factorio` (it looks in the macOS Steam location by default).
+`npm run test:ingame` goes further if you have Factorio 2.0 installed: it imports random outposts into the real game (headless, with its own config and a temporary write folder), builds them, and checks that every entity can be placed, that the train stop and rail signal attach to the track, that everything electric has a pole in reach and the outpost is one electric network, that every beacon reaches a pumpjack, and that the 2.0 output equals what the game makes of the 1.1 output. Point it at the game with `FACTORIO=/path/to/factorio` (it looks in the macOS Steam location by default).

@@ -51,6 +51,24 @@ test('the track ends at the walls and every wall row it crosses is a gate', () =
   }
 });
 
+// Pairs of entities standing on the same tile. A gate on the track is how a wall lets trains through.
+const overlaps = bp => {
+  const tiles = {};
+  const found = [];
+  bp.entities.forEach(e => {
+    // blueprints with track sit on a half-tile grid: an entity owns the tiles its corner falls in
+    for (let x = Math.floor(e.position.x); x < e.position.x + e.size.x - 0.9; x++) {
+      for (let y = Math.floor(e.position.y); y < e.position.y + e.size.y - 0.9; y++) {
+        const other = tiles[x + ',' + y];
+        const pair = other && [other.name, e.name].sort().join(' on ');
+        if (pair && pair !== 'gate on straight_rail' && found.indexOf(pair) === -1) found.push(pair);
+        tiles[x + ',' + y] = e;
+      }
+    }
+  });
+  return found;
+};
+
 // How many groups of poles there are that no wire can join
 const networks = bp => {
   const reach = e => Blueprint.getEntityData()[e.name].maxElectricReach;
@@ -64,17 +82,59 @@ const networks = bp => {
   return new Set(poles.map((_, i) => find(i))).size;
 };
 
-test('every pole can be wired into one network', () => {
+// Whatever runs on electricity and stands outside the 7x7 supply area of every pole
+const ELECTRIC = /mining_drill$|pumpjack$|inserter$|^beacon$|^pump$|^radar$|^roboport$|^small_lamp$|^laser_turret$/;
+const unpowered = bp => {
+  const poles = bp.entities.filter(e => e.name === 'medium_electric_pole');
+  return bp.entities.filter(e => ELECTRIC.test(e.name)).filter(e => !poles.some(pole =>
+    pole.position.x - 3 < e.position.x + e.size.x && pole.position.x + 4 > e.position.x &&
+    pole.position.y - 3 < e.position.y + e.size.y && pole.position.y + 4 > e.position.y)).map(e => e.name);
+};
+
+test('nothing overlaps, everything has power, and all the poles can be wired into one network', () => {
   const rng = generator(4242);
   for (let i = 0; i < 200; i++) {
     const { opt, width, height } = randomOutpost(rng);
+    const about = `settings ${JSON.stringify(opt)} on a ${width}x${height} patch`;
     const bp = new Blueprint(outpost(patch(width, height), Object.assign({}, opt, { gameVersion: '1.1' })));
-    assert.strictEqual(networks(bp), 1, `settings ${JSON.stringify(opt)} on a ${width}x${height} patch`);
+    assert.deepStrictEqual(overlaps(bp), [], `on the same tile with ${about}`);
+    assert.deepStrictEqual(unpowered(bp), [], `without power with ${about}`);
+    assert.strictEqual(networks(bp), 1, `networks with ${about}`);
   }
-  ORIENTATIONS.forEach(([trainSide, trainDirection]) => {
-    const bp = new Blueprint(oilOutpost(oilField(), { trainSide, trainDirection, gameVersion: '1.1' }));
-    assert.strictEqual(networks(bp), 1, `oil outpost, side ${trainSide}, direction ${trainDirection}`);
+  ORIENTATIONS.forEach(([trainSide, trainDirection], n) => {
+    const beacons = [false, 'few', 'balanced', 'max'][n % 4];
+    const about = `oil outpost, side ${trainSide}, direction ${trainDirection}, beacons ${beacons}`;
+    const bp = new Blueprint(oilOutpost(oilField(), { trainSide, trainDirection, beacons, gameVersion: '1.1' }));
+    assert.deepStrictEqual(overlaps(bp), [], `on the same tile: ${about}`);
+    assert.deepStrictEqual(unpowered(bp), [], `without power: ${about}`);
+    assert.strictEqual(networks(bp), 1, `networks: ${about}`);
   });
+});
+
+test('beacons spread over the pumpjacks, and the setting decides how many', () => {
+  const build = beacons => new Blueprint(oilOutpost(oilField(), { beacons, gameVersion: '1.1' }));
+  const named = (bp, name) => bp.entities.filter(e => e.name === name);
+  // a beacon works on whatever its 9x9 area touches
+  const reaches = (beacon, pumpjack) =>
+    beacon.position.x - 3 < pumpjack.position.x + 3 && beacon.position.x + 6 > pumpjack.position.x &&
+    beacon.position.y - 3 < pumpjack.position.y + 3 && beacon.position.y + 6 > pumpjack.position.y;
+
+  assert.strictEqual(named(build(false), 'beacon').length, 0);
+  const counts = ['few', 'balanced', 'max'].map(setting => {
+    const bp = build(setting);
+    const beacons = named(bp, 'beacon');
+    const pumpjacks = named(bp, 'pumpjack');
+    beacons.forEach(beacon => {
+      assert.ok(pumpjacks.some(pumpjack => reaches(beacon, pumpjack)), `${setting}: a beacon reaches no pumpjack`);
+      assert.deepStrictEqual(beacon.modules, { speed_module_3: 2 });
+    });
+    pumpjacks.forEach(pumpjack =>
+      assert.ok(beacons.some(beacon => reaches(beacon, pumpjack)), `${setting}: a pumpjack has no beacon`));
+    return beacons.length;
+  });
+  assert.ok(counts[0] > 0 && counts[0] <= counts[1] && counts[1] < counts[2], `few, balanced, max gave ${counts}`);
+  assert.strictEqual(named(build(true), 'beacon').length, counts[1], 'true means balanced');
+  assert.throws(() => build('plenty'), /opt\.beacons/);
 });
 
 test('an outpost without a station keeps no room for one', () => {

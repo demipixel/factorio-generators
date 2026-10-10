@@ -97,6 +97,17 @@ script.on_init(function()
         end
       end
       result.refused = refused
+      -- and what is not standing there afterwards, such as one of two things on the same tile
+      local standing = {}
+      for _, entity in pairs(surface.find_entities_filtered({ force = "player" })) do
+        if entity.type ~= "entity-ghost" then standing[entity.name] = (standing[entity.name] or 0) + 1 end
+      end
+      local lost = {}
+      for entity_name, wanted in pairs(result.names) do
+        local got = standing[entity_name] or 0
+        if got ~= wanted then lost[entity_name] = wanted - got end
+      end
+      result.lost = lost
 
       local stops = {}
       for _, stop in pairs(surface.find_entities_filtered({ type = "train-stop" })) do
@@ -113,6 +124,35 @@ script.on_init(function()
         end
       end
       result.networks = network_count
+      -- everything that runs on electricity has to stand in a pole's supply area
+      -- (worked out from the game's own boxes and reach: no tick has run yet,
+      -- so nothing is hooked up to a network at this point)
+      local poles = surface.find_entities_filtered({ type = "electric-pole" })
+      local function powered(entity)
+        local box = entity.bounding_box
+        for _, pole in pairs(poles) do
+          local reach = pole.prototype.get_supply_area_distance(pole.quality)
+          local at = pole.position
+          if box.left_top.x < at.x + reach and box.right_bottom.x > at.x - reach
+            and box.left_top.y < at.y + reach and box.right_bottom.y > at.y - reach then
+            return true
+          end
+        end
+        return false
+      end
+      local unpowered = {}
+      local useless_beacons = 0
+      for _, entity in pairs(surface.find_entities_filtered({ force = "player" })) do
+        if entity.type ~= "electric-pole" and entity.prototype.electric_energy_source_prototype
+          and not powered(entity) then
+          unpowered[entity.name] = (unpowered[entity.name] or 0) + 1
+        end
+        if entity.type == "beacon" and #entity.get_beacon_effect_receivers() == 0 then
+          useless_beacons = useless_beacons + 1
+        end
+      end
+      result.unpowered = unpowered
+      result.useless_beacons = useless_beacons
       local signals = {}
       for _, signal in pairs(surface.find_entities_filtered({ type = "rail-signal" })) do
         signals[#signals + 1] = #signal.get_connected_rails()
