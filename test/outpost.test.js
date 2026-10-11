@@ -138,6 +138,48 @@ test('beacons spread over the pumpjacks, and the setting decides how many', () =
   assert.throws(() => build('plenty'), /opt\.beacons/);
 });
 
+test('every miner drops its ore onto a chest or a belt', () => {
+  // default orientation: the layout is not turned, so miners face left or right
+  const catches = e => /chest/.test(e.name) || /transport_belt$/.test(e.name) ||
+    (/underground_belt$/.test(e.name) && e.directionType === 'input');
+  const cases = [];
+  [[3, 'electric_mining_drill'], [5, 'big_mining_drill']].forEach(([minerSize, miningDrillName]) => {
+    [0, 1, 3].forEach(minerSpace => {
+      cases.push({ minerSize, miningDrillName, minerSpace });
+      cases.push({ minerSize, miningDrillName, minerSpace, undergroundBelts: true });
+      cases.push({ minerSize, miningDrillName, minerSpace, undergroundBelts: true, compact: true });
+      cases.push({ minerSize, miningDrillName, minerSpace, botBased: true, requestItem: 'iron_ore' });
+      cases.push({ minerSize, miningDrillName, minerSpace, botBased: true, requestItem: 'iron_ore', compact: true });
+    });
+  });
+  cases.forEach(opt => {
+    const bp = new Blueprint(outpost(patch(30, 22), Object.assign({ gameVersion: '1.1', includeLights: true }, opt)));
+    const drills = bp.entities.filter(e => e.name === opt.miningDrillName);
+    assert.ok(drills.length > 0);
+    drills.forEach(drill => {
+      const out = {
+        x: drill.direction === Blueprint.RIGHT ? drill.position.x + drill.size.x : drill.position.x - 1,
+        y: drill.position.y + Math.floor(drill.size.y / 2)
+      };
+      const target = bp.findEntity(out);
+      assert.ok(target && catches(target),
+        `a miner drops its ore on ${target ? target.name : 'the ground'} with ${JSON.stringify(opt)}`);
+    });
+  });
+});
+
+test('compact miners close the gap between the columns, for belts and for bots', () => {
+  const build = opt => new Blueprint(outpost(patch(30, 22), Object.assign({ gameVersion: '1.1', includeTrainStation: false }, opt)));
+  const count = (bp, name) => bp.entities.filter(e => e.name === name).length;
+  const bots = { botBased: true, requestItem: 'iron_ore' };
+  assert.ok(count(build(Object.assign({ compact: true }, bots)), 'electric_mining_drill') >
+    count(build(bots), 'electric_mining_drill'), 'bots: more miners fit on the same patch');
+  assert.ok(count(build({ undergroundBelts: true, compact: true }), 'electric_mining_drill') >
+    count(build({ undergroundBelts: true }), 'electric_mining_drill'), 'belts: more miners fit on the same patch');
+  // plain belts fill the whole column, so there is nowhere to put the poles
+  assert.strictEqual(count(build({ compact: true }), 'electric_mining_drill'), count(build({}), 'electric_mining_drill'));
+});
+
 test('how much pipe goes underground follows the setting', () => {
   // one wagon: with more, the station itself ducks a pipe under each pump
   const count = (undergroundPipes, name) =>

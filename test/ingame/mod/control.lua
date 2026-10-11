@@ -153,6 +153,18 @@ script.on_init(function()
       end
       result.unpowered = unpowered
       result.useless_beacons = useless_beacons
+      -- every miner has to drop its ore onto a chest or a belt
+      local spilling = 0
+      for _, entity in pairs(surface.find_entities_filtered({ type = "mining-drill" })) do
+        if entity.name ~= "pumpjack" then
+          local catching = surface.find_entities_filtered({
+            position = entity.drop_position,
+            type = { "container", "logistic-container", "transport-belt", "underground-belt", "splitter" },
+          })
+          if #catching == 0 then spilling = spilling + 1 end
+        end
+      end
+      result.spilling = spilling
       -- every pumpjack has to be piped to the same network as the tanks:
       -- walk the pipes from one of them and see which are never reached
       local oil = {}

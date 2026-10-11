@@ -111,7 +111,9 @@ module.exports = function(string, opt = {}) {
 
   // Belt shenanigans
   const UNDERGROUND_BELT = !!opt.undergroundBelts || false;
-  const COMPACT = (UNDERGROUND_BELT && !!opt.compact) || false;
+  // Compact needs the column between the miners to have free tiles for the poles:
+  // underground belts leave some, and so do the chests of a bot based outpost
+  const COMPACT = ((UNDERGROUND_BELT || BOT_BASED) && !!opt.compact) || false;
 
   let BELT_NAME = (opt.beltName || '').replace('transport_belt', '');
   if (BELT_NAME.length > 0 && BELT_NAME[BELT_NAME.length - 1] != '_') BELT_NAME += '_';
@@ -176,6 +178,8 @@ module.exports = function(string, opt = {}) {
   const bp = new Blueprint();
 
   const Y_SIZE = (MINER_SIZE + SPACE_BETWEEN_MINERS) * 2;
+  // The row of a miner its ore comes out on: the middle one
+  const OUTPUT_ROW = Math.floor(MINER_SIZE / 2);
   const X_SIZE = MINER_SIZE * 2 + (COMPACT ? 1 : 2);
 
   let balancerBlueprint = null;
@@ -259,8 +263,8 @@ module.exports = function(string, opt = {}) {
           }
         } 
       } else {
-        // Compact: poles go in the belt column, in the free tiles between an
-        // underground belt's entrance and its exit. Each pair of miners has one such gap.
+        // Compact: poles go in the column between the miners, in the tiles that are
+        // free there. Each pair of miners has one such stretch.
         const column = OFFSET_X + MINER_SIZE;
         const pairSpacing = MINER_SIZE + SPACE_BETWEEN_MINERS;
         const placePole = (poleY, firstFreeY, lastFreeY) => {
@@ -271,14 +275,26 @@ module.exports = function(string, opt = {}) {
           }
         };
 
-        // First pair: entrance at +1, exit at +pairSpacing
-        placePole(OFFSET_Y + MINER_SIZE - 1, OFFSET_Y + 2, OFFSET_Y + pairSpacing - 1);
+        if (BOT_BASED) {
+          // Bots: right below each pair's chest, down to the next chest or the end of the miners
+          const firstChest = OFFSET_Y + OUTPUT_ROW;
+          placePole(firstChest + 1, firstChest + 1, firstChest + pairSpacing - 1);
+          if (NEED_ADDITIONAL_POLES) {
+            const secondChest = firstChest + pairSpacing;
+            placePole(secondChest + 1, secondChest + 1, OFFSET_Y + pairSpacing + MINER_SIZE - 1);
+          }
+        } else {
+          // Belts: between an underground belt's entrance and its exit.
+          // First pair: entrance at the output row, exit right above the second pair's entrance
+          const firstEntrance = OFFSET_Y + OUTPUT_ROW;
+          placePole(OFFSET_Y + MINER_SIZE - 1, firstEntrance + 1, firstEntrance + pairSpacing - 2);
 
-        if (NEED_ADDITIONAL_POLES) {
-          // Second pair: entrance at +pairSpacing + 1. Its exit is pulled in on the last row.
-          const entrance = OFFSET_Y + pairSpacing + 1;
-          const exit = OFFSET_Y + pairSpacing * 2 - (y == Y_LENGTH - 1 ? SPACE_BETWEEN_MINERS + 1 : 0);
-          placePole(Math.min(OFFSET_Y + pairSpacing + MINER_SIZE - 1, exit - 1), entrance + 1, exit - 1);
+          if (NEED_ADDITIONAL_POLES) {
+            // Second pair. Its exit is pulled in on the last row.
+            const entrance = firstEntrance + pairSpacing;
+            const exit = entrance + pairSpacing - 1 - (y == Y_LENGTH - 1 ? SPACE_BETWEEN_MINERS + OUTPUT_ROW : 0);
+            placePole(Math.min(OFFSET_Y + pairSpacing + MINER_SIZE - 1, exit - 1), entrance + 1, exit - 1);
+          }
         }
       }
 
@@ -301,19 +317,21 @@ module.exports = function(string, opt = {}) {
             bp.createEntity(BELT_NAME + 'transport_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + i + 1 }, Blueprint.DOWN);
           }
         } else {
+          // Each pair's ore goes underground where it comes out of the miners and
+          // surfaces right above the next pair's entrance (at the foot of the last miner)
           for (let i = 0; i < 2; i++) {
             const secondaryOffset = i * (SPACE_BETWEEN_MINERS + MINER_SIZE);
-            const lastOffset = IS_LAST && i == 1 ? -1 - SPACE_BETWEEN_MINERS : 0;
-            bp.createEntity(BELT_NAME + 'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + 1 + secondaryOffset }, Blueprint.DOWN)
+            const lastOffset = IS_LAST && i == 1 ? -OUTPUT_ROW - SPACE_BETWEEN_MINERS : 0;
+            bp.createEntity(BELT_NAME + 'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + OUTPUT_ROW + secondaryOffset }, Blueprint.DOWN)
               .setDirectionType('input');
             bp.createEntity(BELT_NAME + 'underground_belt', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + SPACE_BETWEEN_MINERS + MINER_SIZE +
-                  secondaryOffset + lastOffset }, Blueprint.DOWN)
+                  OUTPUT_ROW - 1 + secondaryOffset + lastOffset }, Blueprint.DOWN)
               .setDirectionType('output');
           }
         }
       } else {
         for (let i = 0; i < 2; i++) {
-          bp.createEntity('logistic_chest_passive_provider', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + 1 + i * (SPACE_BETWEEN_MINERS + MINER_SIZE) })
+          bp.createEntity('logistic_chest_passive_provider', { x: OFFSET_X + MINER_SIZE, y: OFFSET_Y + OUTPUT_ROW + i * (SPACE_BETWEEN_MINERS + MINER_SIZE) })
             .setBar(1);
         }
       }

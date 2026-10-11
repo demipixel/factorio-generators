@@ -1,6 +1,6 @@
 {
   "name": "factorio-generators",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Generators for Factorio blueprints: ore and oil outposts with train stations and defenses, and a blueprint tool.",
   "main": "index.js",
   "scripts": {

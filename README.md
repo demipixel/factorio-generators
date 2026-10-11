@@ -17,7 +17,7 @@ Generates an outpost given a blueprintString with 2 walls at the corner of the o
 - minerSize: 3-5, width/length of a miner (default 3)
 - miningDrillName: String, custom mining drill name (default electric_mining_drill)
 - undergroundBelts: Use underground belts in front of miners instead of regular belts
-- compact: No horizontal spacing between miners, place electric poles in between miners. Requires `undergroundBelts` to be `true`.
+- compact: No horizontal spacing between miners, place electric poles in between miners. Requires `undergroundBelts` or `botBased` to be `true`.
 - beltName: Name of type of belt in the format `type` or `type_transport_belt` (default `''` which is yellow belt)
 - useStackInserters: Boolean, use stack inserters between the buffer chests and cargo wagon instead of fast inserters (default true)
 - botBased: Boolean, use passive provider and requester chests (default false)
